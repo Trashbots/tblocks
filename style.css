@@ -134,6 +134,27 @@ label input[type="checkbox"]:disabled + .label-text:before {
     transform: scale(1);
   }
 }
+/*
+Copyright (c) 2019 Trashbots - SDG
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 .function-text {
   width: 80px;
   height: 80px;
@@ -210,6 +231,9 @@ label input[type="checkbox"]:disabled + .label-text:before {
   stroke-width: 4;
   stroke: #5A33FF;
   transition: stroke 0.3s ease;
+  stroke: #FFB74D;
+  fill: #FFB74D;
+  stroke-linejoin: round;
 }
 .flow-path {
   fill: none;
@@ -252,21 +276,17 @@ label input[type="checkbox"]:disabled + .label-text:before {
   stroke-linejoin: round;
 }
 .block-identity-text {
-  /* For name of connected device */
   font-family: 'FontAwesome', "helvetica";
   text-align: center;
-  font-size: 60px;
+  font-size: 40px;
   fill: #FFB74D;
+}
+.block-temperature-text {
+  font-size: 60px;
 }
 .cxnButton-x {
   float: right;
   font-size: 22px;
-  background-color: #ef5b5b;
-  border-color: #ef5b5b;
-}
-.cxnButton-x:active {
-  background-color: #ea4848;
-  border-color: #ea4848;
 }
 .cxnButton-x i {
   margin-top: -5px;
@@ -314,6 +334,9 @@ label input[type="checkbox"]:disabled + .label-text:before {
   font-size: 20px;
   fill: #FFB74D;
   stroke-width: 0;
+}
+.searching-button {
+  font-size: 15px;
 }
 .printBlock-var-text {
   font-family: 'FontAwesome', "helvetica";
@@ -507,6 +530,57 @@ label input[type="checkbox"]:disabled + .label-text:before {
   font-size: 20px;
   stroke-width: 0;
 }
+/*
+Copyright (c) 2019 Trashbots - SDG
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+.fullScreenSlideIn {
+  top: 80px;
+  animation: fullScreenSlideIn 0.5s ease;
+}
+.fullScreenSlideOut {
+  top: 100%;
+  animation: fullScreenSlideOut 0.5s ease;
+}
+@keyframes fullScreenSlideIn {
+  from {
+    top: 100%;
+  }
+  to {
+    top: 80px;
+  }
+}
+@keyframes fullScreenSlideOut {
+  from {
+    top: 80px;
+  }
+  to {
+    top: 100%;
+  }
+}
+#overlayRoot {
+  position: absolute;
+  width: 100%;
+  height: calc(100% - 80px);
+  background-color: #FFF8E1;
+}
 #saveCamera {
   position: absolute;
   top: 0%;
@@ -559,6 +633,205 @@ label input[type="checkbox"]:disabled + .label-text:before {
 .splashBody {
   font-size: 18px;
   font-family: "helvetica";
+}
+/*
+Copyright (c) 2019 Trashbots - SDG
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+.dso-list-box-shell {
+  font-family: 'FontAwesome', "helvetica";
+  height: 100px;
+  border-radius: 6px;
+  margin-top: -5px;
+  margin-bottom: 5px;
+  border: 3px solid #81C784;
+  background-color: #C8E6C9;
+  color: #33691E;
+  font-size: 40px;
+  user-select: none;
+  display: block;
+  overflow: scroll;
+}
+.dso-list-item-selected {
+  background-color: #81C784;
+  color: #33691E;
+}
+.dso-list-box {
+  margin: 0px;
+  list-style: none;
+  padding-left: 0px;
+}
+/*
+Copyright (c) 2019 Trashbots - SDG
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+.slider {
+  position: relative;
+  top: 20px;
+  width: 2em;
+  height: 8em;
+  margin: 1.5em auto;
+  background-color: #873600;
+  border-radius: 0.5em;
+  box-sizing: border-box;
+  padding-top: 3.5em;
+  font-size: 8vmin;
+  -ms-touch-action: none;
+  touch-action: none;
+}
+.slider:before {
+  content: "";
+  display: block;
+  position: relative;
+  right: -0.5em;
+  width: 3em;
+  height: 1em;
+  margin-left: -1em;
+  border: solid 0.25em #f4af41;
+  border-radius: 2em;
+  background-color: inherit;
+  box-sizing: border-box;
+}
+.slider:after {
+  content: attr(data-value);
+  position: absolute;
+  top: -1.5em;
+  width: 2em;
+  line-height: 1em;
+  margin-left: 0em;
+  text-align: center;
+  font-family: "helvetica";
+}
+.sliderLeft {
+  left: 2em;
+  position: relative;
+  float: left;
+  display: inline-block;
+}
+.sliderRight {
+  right: 2em;
+  position: relative;
+  float: right;
+  display: inline-block;
+}
+.drive-diagnostics {
+  font-family: 'helvetica';
+  position: absolute;
+  left: calc(50% - 150px);
+  top: 200px;
+}
+#overlayRoot {
+  position: absolute;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  background-color: #FFF8E1;
+  overflow: hidden;
+}
+.driver-x {
+  color: #FF7043;
+  font-size: 100px;
+  position: relative;
+  text-align: center;
+  left: 10px;
+  bottom: 5px;
+}
+.driver-stop-icon {
+  color: #FF7043;
+  font-size: 70px;
+  position: relative;
+  text-align: center;
+  left: 20px;
+  bottom: -15px;
+}
+.driver-x-debug {
+  color: #FF7043;
+  font-size: 50px;
+  position: relative;
+  text-align: center;
+  left: 5px;
+  bottom: 2px;
+}
+/*
+Copyright (c) 2019 Trashbots - SDG
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+#debugOverlay {
+  width: 100%;
+  height: 100%;
+  background-color: #4F5659;
+}
+#debugLogBackground {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  bottom: 10px;
+  right: 10px;
+  background-color: #003300;
+  border-radius: 10px;
+}
+#debugLog {
+  font-family: "courier new";
+  font-size: 16px;
+  height: 100%;
+  width: calc(100% - 18px);
+  color: #00FF12;
+  position: relative;
+  top: 10px;
+  left: 15px;
+  overflow: auto;
+  white-space: pre;
 }
 html,
 body {
@@ -615,9 +888,18 @@ body {
 }
 .dropArea {
   /* drop area will be moved to bottom, match width of screen */
+  stroke-width: 1;
+  font-family: helvetica;
+  font-size: 18px;
+}
+.area1 {
   fill: #F5B041;
-  stroke-width: 0;
-  stroke: none;
+}
+.area2 {
+  fill: #AE3415;
+}
+.area3 {
+  fill: #7B99AF;
 }
 .tab-block {
   fill: #F5B041;
@@ -732,29 +1014,6 @@ body {
 }
 .teakform button:active {
   outline: none;
-}
-.list-box-shell {
-  font-family: 'FontAwesome', "helvetica";
-  height: 129px;
-  border-radius: 6px;
-  margin-top: -5px;
-  margin-bottom: 5px;
-  border: 3px solid #81C784;
-  background-color: #C8E6C9;
-  color: #33691E;
-  font-size: 40px;
-  user-select: none;
-  display: block;
-  overflow: scroll;
-}
-.list-item-selected {
-  background-color: #81C784;
-  color: #33691E;
-}
-.list-box {
-  margin: 0px;
-  list-style: none;
-  padding-left: 0px;
 }
 .calcButtons {
   fill: #81C784;
@@ -938,63 +1197,6 @@ body {
 .area {
   margin-top: 5px;
 }
-.slider {
-  position: relative;
-  top: 80px;
-  width: 2em;
-  height: 8em;
-  margin: 1.5em auto;
-  background-color: #873600;
-  border-radius: 0.5em;
-  box-sizing: border-box;
-  padding-top: 3.5em;
-  font-size: 8vmin;
-  -ms-touch-action: none;
-  touch-action: none;
-}
-.slider:before {
-  content: "";
-  display: block;
-  position: relative;
-  right: -0.5em;
-  width: 3em;
-  height: 1em;
-  margin-left: -1em;
-  border: solid 0.25em #f4af41;
-  border-radius: 2em;
-  background-color: inherit;
-  box-sizing: border-box;
-}
-.slider:after {
-  content: attr(data-value);
-  position: absolute;
-  top: -1.5em;
-  width: 2em;
-  line-height: 1em;
-  margin-left: 0em;
-  text-align: center;
-  font-family: "helvetica";
-}
-.sliderLeft {
-  left: 2em;
-  position: relative;
-  float: left;
-  display: inline-block;
-}
-.sliderRight {
-  right: 2em;
-  position: relative;
-  float: right;
-  display: inline-block;
-}
-#driverBackground {
-  position: absolute;
-  left: 0%;
-  width: 100%;
-  height: 100%;
-  background-color: #FFF8E1;
-  overflow: hidden;
-}
 .exitGroup {
   background-color: #F2CDB5;
   position: absolute;
@@ -1017,70 +1219,6 @@ body {
   width: 100px;
   border-radius: 100px;
 }
-.driver-x {
-  color: #FF7043;
-  font-size: 100px;
-  position: relative;
-  text-align: center;
-  left: 10px;
-  bottom: 5px;
-}
-.driver-stop-icon {
-  color: #FF7043;
-  font-size: 70px;
-  position: relative;
-  text-align: center;
-  left: 20px;
-  bottom: -15px;
-}
-.driver-x-debug {
-  color: #FF7043;
-  font-size: 50px;
-  position: relative;
-  text-align: center;
-  left: 5px;
-  bottom: 2px;
-}
-.drive-diagnostics {
-  font-family: 'helvetica';
-  position: absolute;
-  left: calc(50% - 150px);
-  top: 200px;
-}
-.fullScreenSlideIn {
-  top: 0%;
-  animation: fullScreenSlideIn 0.75s ease;
-}
-.fullScreenSlideOut {
-  top: -100%;
-  animation: fullScreenSlideOut 0.75s ease;
-}
-@keyframes fullScreenSlideIn {
-  from {
-    top: -100%;
-  }
-  to {
-    top: 0px;
-  }
-}
-@keyframes fullScreenSlideOut {
-  from {
-    top: 0px;
-  }
-  to {
-    top: -100%;
-  }
-}
-#overlayExitButton {
-  background-color: #FF3F4A;
-  position: absolute;
-  top: 5px;
-  left: 20px;
-  position: relative;
-  height: 50px;
-  width: 50px;
-  border-radius: 100px;
-}
 #overlayFrame {
   position: absolute;
   left: 0%;
@@ -1088,38 +1226,12 @@ body {
   height: 100%;
   overflow: hidden;
 }
-#debugOverlay {
-  position: absolute;
-  left: 0%;
-  width: 100%;
-  height: 100%;
-  background-color: #4F5659;
-  overflow: hidden;
-}
-#debugLogBackground {
-  position: relative;
-  top: 10px;
-  left: 10px;
-  width: calc(100% - 20px);
-  height: calc(100% - 70px);
-  background-color: #020602;
-  border-radius: 10px;
-}
-#debugLog {
-  font-family: "courier new";
-  font-size: 35px;
-  height: 80%;
-  width: calc(100% - 18px);
-  color: #00FF12;
-  position: relative;
-  top: 10px;
-  left: 15px;
-  overflow: auto;
-  white-space: pre;
-}
 .commented {
   fill: #fff;
 }
 .text-buttons {
   font-family: 'helvetica';
+}
+.hiddenPaletteBlock {
+  display: none;
 }
