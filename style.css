@@ -284,14 +284,6 @@ SOFTWARE.
 .block-temperature-text {
   font-size: 60px;
 }
-.cxnButton-x {
-  float: right;
-  font-size: 22px;
-}
-.cxnButton-x i {
-  margin-top: -5px;
-  text-anchor: middle;
-}
 .dropdown-comparison {
   background-color: #C8E6C9;
   border-color: #81C784;
@@ -334,9 +326,6 @@ SOFTWARE.
   font-size: 20px;
   fill: #FFB74D;
   stroke-width: 0;
-}
-.searching-button {
-  font-size: 15px;
 }
 .printBlock-var-text {
   font-family: 'FontAwesome', "helvetica";
@@ -553,11 +542,11 @@ SOFTWARE.
 */
 .fullScreenSlideIn {
   top: 80px;
-  animation: fullScreenSlideIn 0.5s ease;
+  animation: fullScreenSlideIn 0.5s ease-out;
 }
 .fullScreenSlideOut {
   top: 100%;
-  animation: fullScreenSlideOut 0.5s ease;
+  animation: fullScreenSlideOut 0.5s ease-in;
 }
 @keyframes fullScreenSlideIn {
   from {
@@ -579,7 +568,6 @@ SOFTWARE.
   position: absolute;
   width: 100%;
   height: calc(100% - 80px);
-  background-color: #FFF8E1;
 }
 #saveCamera {
   position: absolute;
@@ -614,11 +602,24 @@ SOFTWARE.
   }
 }
 #splashOverlay {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(225, 245, 254, 0.8);
+  -ms-touch-action: none;
+  touch-action: none;
+  /* prevent text from being selected browser style */
+  user-select: none;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+#splashDialog {
   position: absolute;
   left: 15%;
-  top: 15%;
+  top: 10%;
   width: 70%;
-  height: 50%;
+  height: 60%;
   padding: 20px;
   background-color: #E1F5FE;
   border-radius: 12px;
@@ -655,13 +656,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+#dsoOverlay {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  background-color: lightgreen;
+  display: flex;
+  flex-direction: column;
+}
 .dso-list-box-shell {
   font-family: 'FontAwesome', "helvetica";
-  height: 100px;
-  border-radius: 6px;
-  margin-top: -5px;
-  margin-bottom: 5px;
-  border: 3px solid #81C784;
+  flex: 1;
+  border-radius: 10px;
+  border: 5px solid #81C784;
   background-color: #C8E6C9;
   color: #33691E;
   font-size: 40px;
@@ -670,13 +678,27 @@ SOFTWARE.
   overflow: scroll;
 }
 .dso-list-item-selected {
-  background-color: #81C784;
-  color: #33691E;
+  background-color: #AED6F1    ;
+  color: #21618C;
 }
 .dso-list-box {
-  margin: 0px;
   list-style: none;
-  padding-left: 0px;
+  padding: 0px;
+  margin: 0px;
+}
+.dso-scan-button {
+  box-sizing: border-box;
+  margin-top: 5px;
+  font-size: 15px;
+  height: 60px;
+  width: 100%;
+  border-radius: 10px;
+}
+.dso-scan-label {
+  fill: #B2EBF2;
+  font-family: "helvetica";
+  font-size: 24px;
+  text-anchor: middle;
 }
 /*
 Copyright (c) 2019 Trashbots - SDG
@@ -699,92 +721,41 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-.slider {
-  position: relative;
-  top: 20px;
-  width: 2em;
-  height: 8em;
-  margin: 1.5em auto;
-  background-color: #873600;
-  border-radius: 0.5em;
-  box-sizing: border-box;
-  padding-top: 3.5em;
-  font-size: 8vmin;
-  -ms-touch-action: none;
-  touch-action: none;
-}
-.slider:before {
-  content: "";
-  display: block;
-  position: relative;
-  right: -0.5em;
-  width: 3em;
-  height: 1em;
-  margin-left: -1em;
-  border: solid 0.25em #f4af41;
-  border-radius: 2em;
-  background-color: inherit;
-  box-sizing: border-box;
-}
-.slider:after {
-  content: attr(data-value);
+#driveOverlay {
   position: absolute;
-  top: -1.5em;
-  width: 2em;
-  line-height: 1em;
-  margin-left: 0em;
-  text-align: center;
-  font-family: "helvetica";
-}
-.sliderLeft {
-  left: 2em;
-  position: relative;
-  float: left;
-  display: inline-block;
-}
-.sliderRight {
-  right: 2em;
-  position: relative;
-  float: right;
-  display: inline-block;
-}
-.drive-diagnostics {
-  font-family: 'helvetica';
-  position: absolute;
-  left: calc(50% - 150px);
-  top: 200px;
-}
-#overlayRoot {
-  position: absolute;
-  left: 0%;
   width: 100%;
   height: 100%;
-  background-color: #FFF8E1;
-  overflow: hidden;
+  background-color: lightgreen;
+  -ms-touch-action: none;
+  touch-action: none;
+  /* prevent text from being selected browser style */
+  user-select: none;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
 }
-.driver-x {
-  color: #FF7043;
-  font-size: 100px;
-  position: relative;
-  text-align: center;
-  left: 10px;
-  bottom: 5px;
+.slider-groove {
+  fill: #4A148C;
+  stroke: #2e7d32;
+  stroke-width: 10px;
 }
-.driver-stop-icon {
-  color: #FF7043;
-  font-size: 70px;
-  position: relative;
-  text-align: center;
-  left: 20px;
-  bottom: -15px;
+.slider-thumb {
+  fill: #CE93D8;
+  stroke: #BA68C8;
+  stroke-width: 10px;
 }
-.driver-x-debug {
-  color: #FF7043;
-  font-size: 50px;
-  position: relative;
-  text-align: center;
-  left: 5px;
-  bottom: 2px;
+.slider-text {
+  fill: #3949AB;
+  font-family: helvetica;
+  text-anchor: middle;
+  pointer-events: none;
+}
+.drive-diagnostics {
+  position: absolute;
+  font-family: 'helvetica';
+  left: calc(50% - 150px);
+  top: 200px;
 }
 /*
 Copyright (c) 2019 Trashbots - SDG
@@ -877,6 +848,23 @@ body {
   width: 100%;
   height: 100%;
   background-color: white;
+  -ms-touch-action: none;
+  touch-action: none;
+  /* prevent text from being selected browser style */
+  user-select: none;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+#actionDotSvgCanvas {
+  position: fixed;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-color: none;
   -ms-touch-action: none;
   touch-action: none;
   /* prevent text from being selected browser style */
@@ -1026,123 +1014,35 @@ body {
   stroke-width: 2;
 }
 /* actton dot are 'bottons' along the top of the canvas */
-.action-dot {
+.action-dot-bg {
   transition: fill 0.2s ease;
-  fill: #F6DDCC;
+  fill: #B2EBF2;
 }
-.action-dot-underlay {
+.action-dot-dropdown-bg {
   transition: fill 0.2s ease;
-  fill: #F2CDB5;
+  fill: #80DEEA;
 }
-.action-dot-rect-pages {
-  fill: #F2CDB5;
-  height: 400px;
-  -webkit-animation: outpages 0.4s ease;
-  /* Safari 4.0 - 8.0 */
-  animation: outpages 0.4s ease;
+.action-dot-bg.action-dot-active {
+  fill: #00BCD4;
+  stroke: #3498DB;
+  stroke-width: 5;
 }
-@-webkit-keyframes outpages {
-  from {
-    height: 0px;
-  }
-  to {
-    height: 400px;
-  }
+.action-dot-bg.action-dot-toggled {
+  fill: #00BCD4;
+  stroke: #3498DB;
+  stroke-width: 5;
 }
-/* Standard syntax */
-@keyframes outpages {
-  from {
-    height: 0px;
-  }
-  to {
-    height: 400px;
-  }
+.action-dot.action-dot-active-text {
+  stroke: #3498DB;
 }
-.action-dot-rect-remove-pages {
-  fill: #F2CDB5;
-  height: 0px;
-  -webkit-animation: inpages 0.45s ease;
-  /* Safari 4.0 - 8.0 */
-  animation: inpages 0.45s ease;
-}
-@-webkit-keyframes inpages {
-  from {
-    height: 400px;
-  }
-  to {
-    height: 0px;
-  }
-}
-/* Standard syntax */
-@keyframes inpages {
-  from {
-    height: 400px;
-  }
-  to {
-    height: 0px;
-  }
-}
-.action-dot-rect-edit {
-  fill: #F2CDB5;
-  height: 400px;
-  -webkit-animation: outedit 0.45s ease;
-  /* Safari 4.0 - 8.0 */
-  animation: outedit 0.45s ease;
-}
-@-webkit-keyframes outedit {
-  from {
-    height: 0px;
-  }
-  to {
-    height: 400px;
-  }
-}
-/* Standard syntax */
-@keyframes outedit {
-  from {
-    height: 0px;
-  }
-  to {
-    height: 400px;
-  }
-}
-.action-dot-rect-remove-edit {
-  fill: #F2CDB5;
-  height: 0px;
-  -webkit-animation: inedit 0.45s ease;
-  /* Safari 4.0 - 8.0 */
-  animation: inedit 0.45s ease;
-}
-@-webkit-keyframes inedit {
-  from {
-    height: 400px;
-  }
-  to {
-    height: 0px;
-  }
-}
-/* Standard syntax */
-@keyframes inedit {
-  from {
-    height: 400px;
-  }
-  to {
-    height: 0px;
-  }
-}
-.action-dot.switch-bg {
-  /*fill: #4DD0E1; */
-  fill: #B3E5FC;
-}
-.action-dot-text {
-  fill: #FF7043;
+.action-dot-fatext {
+  fill: #388e3c;
   font-family: FontAwesome, helvetica;
-  font-size: 36px;
   text-anchor: middle;
   pointer-events: none;
 }
 .action-dot-doc-label {
-  fill: #FF7043;
+  fill: #388e3c;
   font-family: "helvetica";
   font-size: 24px;
   text-anchor: middle;
@@ -1196,28 +1096,6 @@ body {
 }
 .area {
   margin-top: 5px;
-}
-.exitGroup {
-  background-color: #F2CDB5;
-  position: absolute;
-  top: 20px;
-  float: left;
-  left: calc(50% - 150px);
-  position: relative;
-  height: 100px;
-  width: 100px;
-  border-radius: 100px;
-}
-.stopGroup {
-  background-color: #F2CDB5;
-  position: absolute;
-  top: 20px;
-  float: right;
-  right: 40%;
-  position: relative;
-  height: 100px;
-  width: 100px;
-  border-radius: 100px;
 }
 #overlayFrame {
   position: absolute;
