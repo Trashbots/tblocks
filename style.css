@@ -217,7 +217,24 @@ SOFTWARE.
   fill: #43A047;
   animation: outShadowFadeOut 0.35s ease;
 }
-.selectedBlock {
+/*
+.function-block-dragging {
+  fill: #795548;
+  stroke-width: 4;
+  stroke: #4E342E;
+}
+*/
+.function-block {
+  fill: #795548;
+  stroke: #873600;
+  stroke-width: 4;
+  transition: stroke 0.3s ease;
+  stroke-linejoin: round;
+}
+.identity-block {
+  fill: #492f27;
+}
+.selected-block {
   transition: stroke 0.3s ease;
   stroke-width: 4;
   stroke: #1E88E5;
@@ -226,22 +243,12 @@ SOFTWARE.
   stroke-width: 4;
   stroke: #3300ff;
 }
-.function-block {
-  fill: #3372FF;
-  stroke-width: 4;
-  stroke: #5A33FF;
-  transition: stroke 0.3s ease;
-  stroke: #FFB74D;
-  fill: #FFB74D;
-  stroke-linejoin: round;
-}
 .flow-path {
   fill: none;
   stroke-width: 4;
-  stroke: #5A33FF;
+  stroke: #873600;
   stroke-linejoin: round;
   stroke-linecap: round;
-  /* stroke-dasharray: 8, 3.5; */
 }
 .block-stencil {
   fill: none;
@@ -417,7 +424,7 @@ SOFTWARE.
   fill: #332222;
 }
 .block-picture-led-off {
-  fill: #641E16;
+  fill: #641e16;
 }
 .block-picture-led-on {
   fill: #FF3366;
