@@ -285,6 +285,14 @@ body {
   stroke: #8E44AD;
   stroke-width: 5;
 }
+.action-dot-bg.running {
+  fill: #00BCD4;
+  stroke: #8E44AD;
+  stroke-width: 5;
+}
+.action-dot-fatext.running {
+  fill: #33FF66;
+}
 .action-dot-bg.action-dot-active {
   fill: #00BCD4;
   stroke: #3498DB;
@@ -594,7 +602,7 @@ SOFTWARE.
 }
 .running-block {
   stroke-width: 4;
-  stroke: #3300ff;
+  stroke: #33FF66;
 }
 .flow-path {
   fill: none;
@@ -781,18 +789,6 @@ SOFTWARE.
 }
 .block-picture-led-on {
   fill: #FF3366;
-}
-.block-bot-connecting {
-  fill: #BA68C8;
-}
-.block-bot-connected {
-  fill: #4CAF50;
-}
-.block-bot-visible {
-  fill: #42A5F5;
-}
-.block-bot-not-found {
-  fill: #FDD835;
 }
 .block-bot-connection-error {
   fill: #FF5722;
