@@ -586,7 +586,7 @@ SOFTWARE.
 }
 */
 .function-block {
-  fill: #795548;
+  fill: #BA4A00;
   stroke: #873600;
   stroke-width: 4;
   transition: stroke 0.3s ease;
@@ -598,7 +598,7 @@ SOFTWARE.
 .selected-block {
   transition: stroke 0.3s ease;
   stroke-width: 4;
-  stroke: #1E88E5;
+  stroke: #29B6F6;
 }
 .running-block {
   stroke-width: 4;
@@ -752,7 +752,7 @@ SOFTWARE.
   font-family: "Helvetica";
   text-align: center;
   font-size: 15px;
-  fill: #795548;
+  fill: #BA4A00;
 }
 .printBlock-selected {
   background-color: #4CAF50;
