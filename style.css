@@ -1145,6 +1145,7 @@ SOFTWARE.
   fill: #3949AB;
   font-family: "Helvetica";
   text-anchor: middle;
+  alignment-baseline: middle;
   pointer-events: none;
 }
 .drive-diagnostics {
