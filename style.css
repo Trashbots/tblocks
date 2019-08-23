@@ -309,7 +309,7 @@ body {
   pointer-events: none;
 }
 .action-dot-doc-label {
-  fill: #388e3c;
+  fill: #B2EBF2;
   font-family: "Helvetica";
   font-size: 24px;
   text-anchor: middle;
@@ -428,12 +428,12 @@ textarea {
 button {
   font-size: 20px;
   border: 2px solid #81C784;
-  border-radius: 6px;
+  border-radius: 20px;
   background-color: #81C784;
   user-select: none;
   outline: none;
   padding: 1px;
-  height: 30px;
+  height: 40px;
 }
 button:active {
   background-color: #4CAF50;
@@ -1015,7 +1015,7 @@ SOFTWARE.
   width: 70%;
   height: 60%;
   padding: 20px;
-  background-color: #E1F5FE;
+  background-color: #F7F7FF;
   border-radius: 12px;
   border: 10px solid #4FC3F7;
   overflow: hidden;
@@ -1028,6 +1028,14 @@ SOFTWARE.
 .splashBody {
   font-size: 18px;
   font-family: "Helvetica";
+}
+.splash-button:active {
+  border: 2px solid #039BE5;
+  background-color: #039BE5;
+}
+.splash-button {
+  border: 2px solid #4FC3F7;
+  background-color: #4FC3F7;
 }
 /*
 Copyright (c) 2019 Trashbots - SDG
@@ -1064,7 +1072,7 @@ SOFTWARE.
   flex: 1;
   border-radius: 10px;
   border: 5px solid #81C784;
-  background-color: #C8E6C9;
+  background-color: #D8F6D9;
   color: #33691E;
   font-size: 60px;
   user-select: none;
@@ -1095,6 +1103,34 @@ SOFTWARE.
 }
 .dso-button:disabled {
   opacity: 0.6;
+}
+.tbot-device {
+  fill: #11DD33;
+  stroke: #11DD33;
+  stroke-width: 2px;
+}
+.tbot-device-head {
+  fill: #00CC22;
+  stroke: #00CC22;
+  stroke-width: 2px;
+}
+.tbot-device-side {
+  fill: #039BE5;
+  stroke: #039BE5;
+  stroke-width: 2px;
+}
+.tbot-device-name {
+  font-family: "Font Awesome 5 Free", "Helvetica";
+  text-anchor: middle;
+  font-size: 25px;
+  fill: #333300;
+}
+.tbot-select {
+  stroke: #039BE5;
+  stroke-width: 4px;
+  fill: #B3E5FC;
+  stroke-linecap: round;
+  stroke-dasharray: 4,9;
 }
 /*
 Copyright (c) 2019 Trashbots - SDG
