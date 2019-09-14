@@ -221,7 +221,6 @@ body {
   display: inline-block;
   border-radius: 10px;
   margin: 4px 2px;
-  cursor: pointer;
   outline: none;
 }
 .palette-button:active {
@@ -380,6 +379,16 @@ body {
 .hiddenPaletteBlock {
   display: none;
 }
+* {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-callout: none;
+  -webkit-touch-callout: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -ms-user-select: none;
+}
 /*
 Copyright (c) 2017 Paul Austin - SDG
 
@@ -428,7 +437,7 @@ textarea {
 button {
   font-size: 20px;
   border: 2px solid #81C784;
-  border-radius: 20px;
+  border-radius: 30px;
   background-color: #81C784;
   user-select: none;
   outline: none;
@@ -439,8 +448,7 @@ button:active {
   background-color: #4CAF50;
 }
 label input {
-  margin: 15
-  cursor: pointer;
+  margin: 15;
   /* prevent selecting text in control captions */
   -webkit-user-select: none;
   user-select: none;
@@ -1011,31 +1019,38 @@ SOFTWARE.
 #splashDialog {
   position: absolute;
   left: 15%;
-  top: 10%;
+  top: 4%;
   width: 70%;
-  height: 60%;
-  padding: 20px;
+  padding: 10px;
+  padding-left: 20px;
+  padding-top: 20px;
   background-color: #F7F7FF;
   border-radius: 12px;
   border: 10px solid #4FC3F7;
   overflow: hidden;
 }
-.splashTitle {
+.splash-title {
+  margin-top: 0px;
+  margin-bottom: 10px;
   font-size: 24px;
   font-weight: bold;
   font-family: "Helvetica";
 }
-.splashBody {
+.splash-body {
+  margin: 0px;
+}
+.splash-text {
   font-size: 18px;
   font-family: "Helvetica";
+}
+.splash-button {
+  width: 200px;
+  border: 2px solid #4FC3F7;
+  background-color: #4FC3F7;
 }
 .splash-button:active {
   border: 2px solid #039BE5;
   background-color: #039BE5;
-}
-.splash-button {
-  border: 2px solid #4FC3F7;
-  background-color: #4FC3F7;
 }
 /*
 Copyright (c) 2019 Trashbots - SDG
@@ -1064,32 +1079,22 @@ SOFTWARE.
   height: 100%;
   padding: 10px;
   background-color: lightgreen;
-  display: flex;
-  flex-direction: column;
 }
 .dso-list-box-shell {
-  font-family: "Font Awesome 5 Free", "Helvetica";
-  flex: 1;
   border-radius: 10px;
   border: 5px solid #81C784;
   background-color: #D8F6D9;
-  color: #33691E;
-  font-size: 60px;
-  user-select: none;
-  display: block;
-  overflow: scroll;
 }
-.dso-list-item-selected {
-  background-color: #AED6F1    ;
-  color: #21618C;
+.dso-svg-backgound {
+  fill: transparent;
 }
 .dso-list-box {
   list-style: none;
   padding: 0px;
   margin: 0px;
+  height: 100%;
 }
 .dso-button {
-  box-sizing: border-box;
   margin-top: 5px;
   height: 60px;
   width: 49%;

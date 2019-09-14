@@ -4,12 +4,12 @@
 <head>
   <!-- Google Tag Manager, except in iOS Apps -->
   <script>
-  var g_standalone = window.navigator.standalone,
-      g_userAgent = window.navigator.userAgent.toLowerCase(),
-      g_safari = /safari/.test( g_userAgent ),
-      g_ios = /iphone|ipod|ipad/.test( g_userAgent );
+  var gStandalone = window.navigator.standalone,
+      gUserAgent = window.navigator.userAgent.toLowerCase(),
+      gSafari = /safari/.test( gUserAgent ),
+      gIOS = /iphone|ipod|ipad/.test( gUserAgent );
 
-  if (!(g_ios && (!standalone && !safari))) {
+  if (!(gIOS && (!gStandalone && !gSafari))) {
     console.log('start GTM');
     (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -50,7 +50,7 @@
 <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T94V7ZS"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    height='0px' width='0px' style='display:none;visibility:hidden'></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
   <div>
     <svg id='editorSvgCanvas' xmlns="http://www.w3.org/2000/svg"></svg>
@@ -62,7 +62,7 @@
   </div>
   <div id='saveCamera' class='cameraIdle'></div>
   <!-- forms dynamically inserted into this div -->
-  <div id='tbe-forms'></div>
+  <div id='tbe-forms' style='height:0px;'></div>
   <div id='cookieSheet'></dvi>
 </body>
 <script src='bundled_tbe.js'></script>
