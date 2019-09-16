@@ -943,7 +943,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 .fullScreenSlideIn {
-  top: 80px;
+  top: 0%;
   animation: fullScreenSlideIn 0.5s ease-out;
 }
 .fullScreenSlideOut {
@@ -955,20 +955,29 @@ SOFTWARE.
     top: 100%;
   }
   to {
-    top: 80px;
+    top: 0%;
   }
 }
 @keyframes fullScreenSlideOut {
   from {
-    top: 80px;
+    top: 0%;
   }
   to {
     top: 100%;
   }
 }
+#overlayShell {
+  position: absolute;
+  width: 100%;
+  top: 0px;
+  bottom: 100%;
+  height: 100%;
+}
 #overlayRoot {
   position: absolute;
   width: 100%;
+  top: 80px;
+  bottom: 100%;
   height: calc(100% - 80px);
 }
 #saveCamera {
