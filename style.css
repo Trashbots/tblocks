@@ -976,9 +976,7 @@ SOFTWARE.
 #overlayRoot {
   position: absolute;
   width: 100%;
-  top: 80px;
   bottom: 100%;
-  height: calc(100% - 80px);
 }
 #saveCamera {
   position: absolute;
@@ -1027,9 +1025,9 @@ SOFTWARE.
 }
 #splashDialog {
   position: absolute;
-  left: 15%;
+  left: 10%;
   top: 4%;
-  width: 70%;
+  width: 75%;
   padding: 10px;
   padding-left: 20px;
   padding-top: 20px;
@@ -1047,9 +1045,6 @@ SOFTWARE.
 }
 .splash-body {
   margin: 0px;
-}
-.splash-text {
-  font-size: 18px;
   font-family: "Helvetica";
 }
 .splash-button {

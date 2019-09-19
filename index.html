@@ -19,6 +19,10 @@
   } else {
     console.log('skip GTM');
   }
+
+  if (gIOS) {
+    document.ontouchmove = event => { event.preventDefault(); };
+  }
   </script>
   <!-- End Google Tag Manager -->
 
