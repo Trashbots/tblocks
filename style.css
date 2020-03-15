@@ -164,10 +164,10 @@ body {
 }
 @keyframes selectionFadeIn {
   from {
-    opacity: 0.0;
+    opacity: 0;
   }
   to {
-    opacity: 1.0;
+    opacity: 1;
   }
 }
 .selection-rect {
@@ -229,7 +229,7 @@ body {
 /* teak form is for system wide dialogs that slide in from the top */
 .pulldown {
   width: 14em;
-  transition: transform .4s ease;
+  transition: transform 0.4s ease;
 }
 .pulldown.opened {
   width: 14em;
@@ -414,13 +414,13 @@ SOFTWARE.
   width: 31.6%;
 }
 .width-half {
-  width: 50.0%;
+  width: 50%;
 }
 .width-twothirds {
   width: 66.6%;
 }
 .width-whole {
-  width: 100.0%;
+  width: 100%;
 }
 /* Buttons for the bock config edit operations run, copy, delete */
 .group-div {
@@ -536,7 +536,7 @@ SOFTWARE.
 }
 @keyframes shadowFadeIn {
   from {
-    opacity: 0.0;
+    opacity: 0;
   }
   to {
     opacity: 0.4;
@@ -544,7 +544,7 @@ SOFTWARE.
 }
 @keyframes outShadowFadeIn {
   from {
-    opacity: 0.0;
+    opacity: 0;
   }
   to {
     opacity: 0.15;
@@ -565,7 +565,7 @@ SOFTWARE.
     opacity: 0.4;
   }
   to {
-    opacity: 0.0;
+    opacity: 0;
   }
 }
 @keyframes outShadowFadeOut {
@@ -573,16 +573,16 @@ SOFTWARE.
     opacity: 0.15;
   }
   to {
-    opacity: 0.0;
+    opacity: 0;
   }
 }
 .shadow-block-leave {
-  opacity: 0.0;
+  opacity: 0;
   fill: #43A047;
   animation: shadowFadeOut 0.35s ease;
 }
 .shadow-block-leave-outsnap {
-  opacity: 0.0;
+  opacity: 0;
   fill: #43A047;
   animation: outShadowFadeOut 0.35s ease;
 }
@@ -634,7 +634,7 @@ SOFTWARE.
 }
 .block-stencil-fill-back {
   fill: #81C784;
-  opacity: .5;
+  opacity: 0.5;
   stroke-linejoin: round;
 }
 .block-sensor-stencil {
