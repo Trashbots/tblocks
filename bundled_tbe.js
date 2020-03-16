@@ -14601,7 +14601,7 @@ module.exports = function () {
       // Start Blocks
       { name: 'identity', group: 'start' }, { name: 'identityAccelerometer', group: 'start' }, { name: 'identityButton', group: 'start' }, { name: 'identityTemperature', group: 'start' },
       // Function Blocks
-      { name: 'picture', group: 'fx' }, { name: 'sound', group: 'fx' }, { name: 'motor', group: 'fx' }, { name: 'twoMotor', group: 'fx' }, { name: 'variableSet', group: 'fx' }, { name: 'print', group: 'fx' },
+      { name: 'picture', group: 'fx' }, { name: 'sound', group: 'fx' }, { name: 'motor', group: 'fx' }, { name: 'twoMotor', group: 'fx' }, { name: 'variableSet', group: 'fx' }, { name: 'variableAdd', group: 'fx' }, { name: 'print', group: 'fx' },
       // Control Blocks
       { name: 'wait', group: 'control' }, { name: 'loop', group: 'control' }]
     };
@@ -15910,6 +15910,7 @@ SOFTWARE.
 module.exports = function () {
   var svgb = require('svgbuilder.js');
   var identityButtonBlock = {};
+  var icons = require('icons.js');
 
   // Initial settings for blocks of this type.
   identityButtonBlock.defaultSettings = function () {
@@ -15951,19 +15952,7 @@ module.exports = function () {
   // Buid an SVG for the block that indicates the device name
   // and connection status
   identityButtonBlock.svg = function (root, block) {
-    var buttonBack = svgb.createRect('svg-clear block-idButton-back', 15, 10, 50, 50, 3);
-    root.appendChild(buttonBack);
-
-    var screw = svgb.createCircle('svg-clear block-idButton-screw', 23, 18, 4);
-    root.appendChild(screw);
-    screw = svgb.createCircle('svg-clear block-idButton-screw', 57, 18, 4);
-    root.appendChild(screw);
-    screw = svgb.createCircle('svg-clear block-idButton-screw', 57, 52, 4);
-    root.appendChild(screw);
-    screw = svgb.createCircle('svg-clear block-idButton-screw', 23, 52, 4);
-    root.appendChild(screw);
-
-    var button = svgb.createCircle('svg-clear block-idButton-button', 40, 35, 18);
+    var button = icons.button(1, '', 15, 10);
     root.appendChild(button);
 
     var data = block.controllerSettings.data.button;
@@ -15975,7 +15964,7 @@ module.exports = function () {
   return identityButtonBlock;
 }();
 
-},{"svgbuilder.js":59}],26:[function(require,module,exports){
+},{"icons.js":56,"svgbuilder.js":59}],26:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16526,11 +16515,15 @@ module.exports = function () {
     root.appendChild(motor);
 
     var data2 = block.controllerSettings.data.duration;
+    var data3 = block.controllerSettings.data.motor;
     var textToDisplay = svgb.createGroup('displayText', 0, 0);
-    var duration = svgb.createText('svg-clear block-motor-text-duration block-stencil-fill', 45, 70, data2 + ' \uF192'); //data2 + " \uf192"
+    var duration = svgb.createText('svg-clear block-motor-text-duration block-stencil-fill', 45, 70, data2 + ' \uF192');
+    var whichMotor = svgb.createText('svg-clear block-stencil-fill block-motor-text-type', 45, 34, data3);
     textToDisplay.appendChild(duration);
+    textToDisplay.appendChild(whichMotor);
     textToDisplay.setAttribute('text-anchor', 'middle');
     root.appendChild(textToDisplay);
+
     return root;
   };
   motorBlock.configuratorOpen = function (div, block) {
@@ -16570,6 +16563,7 @@ module.exports = function () {
       }
     }
     keypad.closeTabs(div);
+    block.updateSvg();
   };
 
   return motorBlock;
@@ -16744,6 +16738,7 @@ module.exports = function () {
   var icons = require('icons.js');
   var printBlock = {};
   var vars = require('./../variables.js');
+  var fastr = require('fastr.js');
 
   // Items for selecting a device from a list.
   //identityAccelerometer.devices = ko.observableArray([]);
@@ -16757,7 +16752,7 @@ module.exports = function () {
         // What to print: var, sensor
         print: 'var',
         variable: 'A',
-        sensor: 'accel',
+        sensor: 'temperature',
         button: 'A',
         // Value
         value: 0
@@ -16768,7 +16763,11 @@ module.exports = function () {
   printBlock.configuratorOpen = function (div, block) {
     var data = block.controllerSettings.data;
     printBlock.activeBlock = block;
-    div.innerHTML = '<div id=\'printEditorDiv\' class=\'editorDiv\'>\n          <div class=\'printBlock-buttons\' y="100%">\n            <div class=\'printBlock-option\' value=\'A\'><span class="svg-clear">A</span></div>\n            <div class=\'printBlock-option\' value=\'B\'><span class="svg-clear">B</span></div>\n          </div>\n          <div class="vert-line"></div>\n          <div id=\'printBlock-editor\'>\n          </div>\n        </div>';
+    div.innerHTML = '<div id=\'printEditorDiv\' class=\'editorDiv\'>\n          <div id=\'printBlock-editor\'>\n          </div>\n          <div class=\'printBlock-buttons\' y="100%">\n            <div class=\'printBlock-option\' value=\'A\'>\n              <svg id=\'variable-option\' class="svg-clear" width=\'60px\' height=\'40px\' xmlns=\'http://www.w3.org/2000/svg\'></svg>\n            </div>\n            <div class=\'printBlock-option\' value=\'B\'>\n              <span class="svg-clear data-option">' + fastr.data + '</span>\n            </div>\n          </div>\n          <div class="vert-line"></div>\n        </div>';
+    var variableOption = document.getElementById('variable-option');
+    var button = icons.variable(0.9, 4, 1, '');
+    variableOption.appendChild(button);
+
     printBlock.loadSlide(data.button, block);
 
     var selObj = document.getElementById("var-list");
@@ -16815,7 +16814,7 @@ module.exports = function () {
       //sensor
       block.controllerSettings.data.print = "sensor";
       block.controllerSettings.data.button = "B";
-      editor.innerHTML = '<select class="dropdown-comparison printBlock-dropdown" id="var-list">\n        <option value="accel">accel</option>\n        <option value="temp">temp</option>\n      </select>';
+      editor.innerHTML = '<select class="dropdown-comparison printBlock-dropdown" id="var-list">\n        <option value="temperature">temperature</option>\n        <option value="accelerometer">accelerometer</option>\n      </select>';
     }
   };
 
@@ -16847,10 +16846,10 @@ module.exports = function () {
       root.appendChild(variable);
     } else if (print === 'sensor') {
       var sensor = block.controllerSettings.data.sensor;
-      if (sensor === 'accel') {
+      if (sensor === 'accelerometer') {
         var accel = icons.accelerometer(0.50, 'block-stencil-fill svg-clear', 90, 135);
         root.appendChild(accel);
-      } else if (sensor === 'temp') {
+      } else if (sensor === 'temperature') {
         var temp = svgb.createText('fa block-identity-text svg-clear', 90, 160, '\uF2C9');
         temp.setAttribute('transform', 'scale(0.45)');
         root.appendChild(temp);
@@ -16861,7 +16860,7 @@ module.exports = function () {
   return printBlock;
 }();
 
-},{"./../variables.js":61,"icons.js":56,"interact.js":15,"knockout":16,"svgbuilder.js":59}],32:[function(require,module,exports){
+},{"./../variables.js":61,"fastr.js":55,"icons.js":56,"interact.js":15,"knockout":16,"svgbuilder.js":59}],32:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22135,7 +22134,8 @@ module.exports = function factory() {
     connect: '\uF1E6',
     robot: '\uF544',
     temp: '\uF2C9',
-    loop: '\uF2EA'
+    loop: '\uF2EA',
+    data: '\uF080'
   };
 
   return fastr;
@@ -22374,11 +22374,11 @@ module.exports = function () {
     var path = svgb.createPath('svg-clear block-stencil-fill-back', pathd);
     group.appendChild(path);
     pathd = '';
-    pathd = pb.move(37, 30);
-    pathd += pb.line(2.5, -19);
+    pathd = pb.move(35, 30);
+    pathd += pb.line(4.5, -19);
     pathd += pb.hline(1);
-    pathd += pb.line(2.5, 19);
-    pathd += pb.arc(3.0, 180, 1, 1, -6, 0);
+    pathd += pb.line(4.5, 19);
+    pathd += pb.arc(3.0, 180, 1, 1, -10, 0);
     pathd += pb.close();
     path = svgb.createPath('svg-clear block-stencil-fill', pathd);
     path.setAttribute('transform', "rotate(" + rotate + " 40 30)"); //rotate
@@ -22421,6 +22421,28 @@ module.exports = function () {
     var path = svgb.createPath(classes, pathd);
     path.setAttribute('transform', 'scale(' + scale + ')');
     return path;
+  };
+
+  icons.button = function (scale, classes, x, y) {
+    var group = svgb.createGroup('svg-clear ' + classes, 0, 0);
+
+    var buttonBack = svgb.createRect('svg-clear block-idButton-back', x, y, 50, 50, 3); // 15, 10
+    group.appendChild(buttonBack);
+
+    var screw = svgb.createCircle('svg-clear block-idButton-screw', x + 8, y + 8, 4);
+    group.appendChild(screw);
+    screw = svgb.createCircle('svg-clear block-idButton-screw', x + 42, y + 8, 4);
+    group.appendChild(screw);
+    screw = svgb.createCircle('svg-clear block-idButton-screw', x + 42, y + 42, 4);
+    group.appendChild(screw);
+    screw = svgb.createCircle('svg-clear block-idButton-screw', x + 8, y + 42, 4);
+    group.appendChild(screw);
+
+    var button = svgb.createCircle('svg-clear block-idButton-button', x + 25, y + 25, 18);
+    group.appendChild(button);
+
+    group.setAttribute('transform', 'scale(' + scale + ')');
+    return group;
   };
 
   return icons;
