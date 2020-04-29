@@ -16136,19 +16136,27 @@ module.exports = function () {
     };
   };
 
+  identityTemperatureBlock.fixLabel = function () {
+    var boxContent = document.getElementById('numeric-display').innerHTML;
+    console.log(window.origin);
+    boxContent = boxContent.slice(0, boxContent.length - 3) + boxContent.slice(boxContent.length - 2, boxContent.length);
+    document.getElementById('numeric-display').innerHTML = boxContent;
+  };
+
   identityTemperatureBlock.configuratorOpen = function (div, block) {
     keypad.openTabs(div, {
       'getValue': function getValue() {
         return block.controllerSettings.data.value;
       },
       'setValue': function setValue(value) {
+        identityTemperatureBlock.fixLabel();
         block.controllerSettings.data.value = value;
       },
       'type': identityTemperatureBlock,
       'block': block,
       'min': 20,
       'max': 120,
-      'suffix': "˚F",
+      'suffix': ' °F', //˚F
       'numArray': ["-1", "C", "+1", "-10", undefined, "+10"],
       'calcLayout': 'simple',
       'inner': '<div id=\'keypadDiv\' class=\'editorDiv\'>\n          <div class="dropdown-label-txt svg-clear">temp\n          </div>\n          <select class="dropdown-comparison" id="dropdown-comparison">\n            <option value=">" id="idTemp-greater">></option>\n            <option value="<" id="idTemp-less"><</option>\n            <option value="=" id="idTemp-equals">=</option>\n          </select>\n          <div id="numeric-display" class = "numeric-display-third svg-clear" width=\'30px\' height=\'80px\' data-bind=\'text: keyPadValue\'>\n          </div>\n          <svg id="keypadSvg" class=\'area\' width=\'225px\' height=\'200px\' xmlns=\'http://www.w3.org/2000/svg\'></svg>\n      </div>'
@@ -16162,6 +16170,7 @@ module.exports = function () {
         break;
       }
     }
+    identityTemperatureBlock.fixLabel();
   };
 
   // Close the identity blocks and clean up hooks related to it.
@@ -16304,7 +16313,7 @@ module.exports = function () {
     // Take event, make event.target
     // get characteristic of dom element
 
-    interact('.calcButtons', { context: keypadSvg }).on('tap', function (event) {
+    interact('.calcButtons', { context: keypadSvg }).on('tap hold click', function (event) {
       // Get the clicked on button name
       strNum = event.target.getAttribute('name');
       console.log('tap ->', strNum);
@@ -16421,7 +16430,7 @@ module.exports = function () {
       }
     }
 
-    interact('.beatsButtons', { context: beatsSvg }).on('tap', function (event) {
+    interact('.beatsButtons', { context: beatsSvg }).on('tap hold click', function (event) {
       var strNum = event.target.getAttribute('name');
 
       num = strNum; // Set num to strNum
@@ -17669,6 +17678,7 @@ module.exports = function () {
   conductor.linkHeartBeat = function () {
     var botName = dso.deviceName;
     conductor.hbTimer = 0;
+    conductor.cxn.write(botName, '(m:(1 2) d:0);');
 
     // Set all of the blocks to a regular state.
     conductor.tbe.forEachDiagramBlock(function (b) {
@@ -17699,18 +17709,18 @@ module.exports = function () {
             block = block.next;
           }
           // If this is a new block, get its duration
-          if (conductor.count === null) {
-            conductor.count = block.controllerSettings.data.duration;
+          if (block.count === null || block.count === undefined) {
+            block.count = block.controllerSettings.data.duration;
           }
 
           // If it does not have a duration or it has a duration of 0
           // then set its duration to 1
-          if (conductor.count === undefined || conductor.count === '0') {
-            conductor.count = 1;
+          if (block.count === undefined || block.count === '0') {
+            block.count = 1;
           }
 
           if (block !== null) {
-            conductor.count = parseInt(conductor.count, 10);
+            block.count = parseInt(block.count, 10);
 
             // Mark the current block as running
             var id = block.first;
@@ -17723,12 +17733,11 @@ module.exports = function () {
             // continue playing the block.
             // Otherwise, get the next block ready and set count to null.
             conductor.playOne(block);
-            if (conductor.count > 1) {
-              conductor.count -= 1;
+            if (block.count > 1) {
+              block.count -= 1;
             } else {
               conductor.runningBlocks[i] = block.next;
-              conductor.count = null;
-              conductor.cxn.write(botName, '(m:(1 2) d:0);');
+              block.count = null;
             }
           }
         }
@@ -18387,7 +18396,8 @@ module.exports = function factory() {
             cxn.webBLEWrite.writeValue(buffer).then(function () {
               //log.trace('write succeded', message);
             }).catch(function (error) {
-              log.trace('write failed', message, error);
+              //log.trace('write failed', message, error);
+              setTimeout(cxn.write(name, message), 50);
             });
           }
           //var cxn.webBLEWrite = null;
