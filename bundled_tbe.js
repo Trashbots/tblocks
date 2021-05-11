@@ -14476,14 +14476,14 @@ module.exports = function () {
 		if (window.cordova !== undefined) {
 			app.platformId = window.cordova.platformId;
 		} else {
-			app.platformId = "broswer";
+			app.platformId = "browser";
 		}
 
 		var isApp = app.isCordovaApp;
 		var w = window.innerWidth;
 		var h = window.innerHeight;
-		var luanchMessage = 'verson:' + app.buildFlags.version + ', isApp:' + app.isCordovaApp + ', platform:' + app.platformId + ', screen:(' + w + ', ' + h + ')';
-		log.trace(luanchMessage);
+		var launchMessage = 'version:' + app.buildFlags.version + ', isApp:' + app.isCordovaApp + ', platform:' + app.platformId + ', screen:(' + w + ', ' + h + ')';
+		log.trace(launchMessage);
 
 		// Once app has started these can be added.
 		document.addEventListener("pause", app.pause, false);
@@ -14599,14 +14599,15 @@ module.exports = function () {
 			},
 			'paste': function paste() {
 				if (tbe.copyTest !== null) {
-					app.teaktext.textToBlocks(tbe, tbe.copyText);
+					app.tbe.textToBlocks(null, tbe.copyText);
 				}
 			},
 			'save': function save() {
 				var currentDocText = app.teaktext.blocksToText(tbe.forEachDiagramChain);
 				app.storage.setItem(tbe.currentDoc, currentDocText);
 			},
-			'calibrate': 'calibrationOverlay'
+			'calibrate': 'calibrationOverlay',
+			'tutorialOverlay': 'tutorialOverlay'
 		};
 
 		// Construct the clipboard
@@ -14628,12 +14629,12 @@ module.exports = function () {
 			// Start Blocks
 			{ name: 'identity', group: 'start' }, { name: 'identityAccelerometer', group: 'start' }, { name: 'identityButton', group: 'start' }, { name: 'identityTemperature', group: 'start' },
 			// Function Blocks
-			{ name: 'picture', group: 'fx' }, { name: 'sound', group: 'fx' }, { name: 'motor', group: 'fx' }, { name: 'twoMotor', group: 'fx' }, { name: 'variableSet', group: 'fx' }, { name: 'variableAdd', group: 'fx' }, { name: 'print', group: 'fx' },
+			{ name: 'picture', group: 'action' }, { name: 'sound', group: 'action' }, { name: 'motor', group: 'action' }, { name: 'twoMotor', group: 'action' }, { name: 'variableSet', group: 'action' }, { name: 'variableAdd', group: 'action' }, { name: 'print', group: 'action' },
 			// Control Blocks
 			{ name: 'wait', group: 'control' }, { name: 'loop', group: 'control' }]
 		};
 
-		var actionButtonDefs = [{ 'alignment': 'L', 'label': fastr.play, 'command': 'play', 'tweakx': 4 }, { 'alignment': 'L', 'label': fastr.stop, 'command': 'stop' }, { 'alignment': 'L', 'label': fastr.gamepad, 'command': 'driveOverlay' }, { 'alignment': 'M', 'label': fastr.debug, 'command': 'debugOverlay' }, { 'alignment': 'M', 'label': fastr.file, 'command': 'pages', 'sub': buttonsPages }, { 'alignment': 'M', 'label': fastr.edit, 'command': 'edit', 'sub': buttonsEdit }, { 'alignment': 'M', 'label': fastr.calibrate, 'command': 'calibrate' }, { 'alignment': 'R', 'label': '', 'command': 'deviceScanOverlay' }];
+		var actionButtonDefs = [{ 'alignment': 'L', 'label': fastr.play, 'command': 'play', 'tweakx': 4 }, { 'alignment': 'L', 'label': fastr.stop, 'command': 'stop' }, { 'alignment': 'L', 'label': fastr.gamepad, 'command': 'driveOverlay' }, { 'alignment': 'M', 'label': fastr.debug, 'command': 'debugOverlay' }, { 'alignment': 'M', 'label': fastr.file, 'command': 'pages', 'sub': buttonsPages }, { 'alignment': 'M', 'label': fastr.edit, 'command': 'edit', 'sub': buttonsEdit }, { 'alignment': 'M', 'label': fastr.calibrate, 'command': 'calibrate' }, { 'alignment': 'M', 'label': fastr.tutorial, 'command': 'tutorialOverlay' }, { 'alignment': 'R', 'label': '', 'command': 'deviceScanOverlay' }];
 
 		var base = app.dots.defineButtons(actionButtonDefs, document.getElementById('editorSvgCanvas'));
 		// It seesm SVG eat all the events, even ones that don't hit any objects :(
@@ -14646,7 +14647,7 @@ module.exports = function () {
 
 		var loadedDocText = app.storage.getItem('docA');
 		if (loadedDocText !== null) {
-			app.teaktext.textToBlocks(tbe, loadedDocText);
+			app.tbe.textToBlocks('docA', loadedDocText);
 		}
 
 		// Add the main command buttons, to left, middle and right locations.
@@ -14701,7 +14702,7 @@ module.exports = function () {
 	return app;
 }();
 
-},{"../buildFlags.js":1,"./block-settings.js":19,"./conductor.js":38,"./defaultFiles.js":40,"./overlays/actionDots.js":43,"./overlays/overlays.js":49,"./teakblocks.js":51,"./teaktext.js":53,"clipboard":8,"fastr.js":56,"knockout":16,"log.js":58}],19:[function(require,module,exports){
+},{"../buildFlags.js":1,"./block-settings.js":19,"./conductor.js":38,"./defaultFiles.js":40,"./overlays/actionDots.js":43,"./overlays/overlays.js":49,"./teakblocks.js":53,"./teaktext.js":55,"clipboard":8,"fastr.js":58,"knockout":16,"log.js":60}],19:[function(require,module,exports){
 'use strict';
 
 /*
@@ -14983,6 +14984,16 @@ module.exports = function () {
   blockSettings.onClickTab = function () {
     // Since its DOM event, 'this' will be the button.
     blockSettings.selectActiveTab(this.id);
+
+    // update motor
+    var block = blockSettings.activeBlock;
+    var tabs = document.getElementsByClassName('block-settings-tab');
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].classList.contains('tab-selected')) {
+        block.controllerSettings.data.motor = tabs[i].textContent;
+      }
+    }
+    block.updateSvg();
   };
 
   blockSettings.selectActiveTab = function (name) {
@@ -15080,7 +15091,7 @@ module.exports = function () {
   return blockSettings;
 }();
 
-},{"./conductor.js":38,"./teakblocks.js":51,"knockout":16}],20:[function(require,module,exports){
+},{"./conductor.js":38,"./teakblocks.js":53,"knockout":16}],20:[function(require,module,exports){
 'use strict';
 
 /*
@@ -15549,7 +15560,7 @@ module.exports = function () {
   return calcpad;
 }();
 
-},{"icons.js":57,"interact.js":15,"knockout":16,"svgbuilder.js":60}],21:[function(require,module,exports){
+},{"icons.js":59,"interact.js":15,"knockout":16,"svgbuilder.js":62}],21:[function(require,module,exports){
 "use strict";
 
 /*
@@ -15742,7 +15753,7 @@ module.exports = function () {
   return { flowBlockHead: flowBlockHead, flowBlockTail: flowBlockTail };
 }();
 
-},{"./keypadTab.js":28,"fastr.js":56,"knockout":16,"svgbuilder.js":60}],23:[function(require,module,exports){
+},{"./keypadTab.js":28,"fastr.js":58,"knockout":16,"svgbuilder.js":62}],23:[function(require,module,exports){
 'use strict';
 
 /*
@@ -15836,7 +15847,7 @@ module.exports = function () {
   return identityAccelerometerBlock;
 }();
 
-},{"./../keypadTab.js":28,"icons.js":57,"knockout":16}],24:[function(require,module,exports){
+},{"./../keypadTab.js":28,"icons.js":59,"knockout":16}],24:[function(require,module,exports){
 'use strict';
 
 /*
@@ -15907,7 +15918,7 @@ module.exports = function () {
   return identityBlock;
 }();
 
-},{"fastr.js":56,"knockout":16,"svgbuilder.js":60}],25:[function(require,module,exports){
+},{"fastr.js":58,"knockout":16,"svgbuilder.js":62}],25:[function(require,module,exports){
 'use strict';
 
 /*
@@ -15989,7 +16000,7 @@ module.exports = function () {
   return identityButtonBlock;
 }();
 
-},{"icons.js":57,"svgbuilder.js":60}],26:[function(require,module,exports){
+},{"icons.js":59,"svgbuilder.js":62}],26:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16112,7 +16123,7 @@ module.exports = function () {
   return identityGyroBlock;
 }();
 
-},{"./../keypadTab.js":28,"knockout":16,"svgbuilder.js":60}],27:[function(require,module,exports){
+},{"./../keypadTab.js":28,"knockout":16,"svgbuilder.js":62}],27:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16217,7 +16228,7 @@ module.exports = function () {
   return identityTemperatureBlock;
 }();
 
-},{"./../keypadTab.js":28,"fastr.js":56,"knockout":16,"svgbuilder.js":60}],28:[function(require,module,exports){
+},{"./../keypadTab.js":28,"fastr.js":58,"knockout":16,"svgbuilder.js":62}],28:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16248,6 +16259,9 @@ module.exports = function () {
   var ko = require('knockout');
   var keypad = {};
 
+  keypad.isBeatsOpen = false;
+  keypad.isNumericOpen = false;
+
   keypad.tabbedButtons = function (div, object) {
     object.inner = '<div id=\'keypadDiv\' class=\'editorDiv\'>\n              <div id="numeric-display" class = "numeric-display-half svg-clear selectedDisplay" width=\'80px\' height=\'80px\' data-bind=\'text: keyPadValue\'>\n              </div>\n              <div id="beats-display" class = "beats-display svg-clear" width=\'80px\' height=\'80px\' data-bind=\'text: beatsValue\'>\n              </div>\n              <svg id="keypadSvg" class=\'area\' width=\'225px\' height=\'200px\' xmlns=\'http://www.w3.org/2000/svg\'></svg>\n              <svg id="beatsSvg" class=\'area\' width=\'225px\' height=\'200px\' xmlns=\'http://www.w3.org/2000/svg\'></svg>\n          </div>';
     keypad.openTabs(div, object); //dataButton
@@ -16261,6 +16275,12 @@ module.exports = function () {
     var beatsDisplay = document.getElementById('beats-display');
     var numericDisplay = document.getElementById('numeric-display');
     beatsDisplay.onclick = function () {
+      if (keypad.isBeatsOpen) {
+        return;
+      }
+      keypad.isBeatsOpen = true;
+      keypad.isNumericOpen = false;
+
       var buttons = document.getElementsByClassName('dataButton');
       beatsDisplay.className += " selectedDisplay";
       numericDisplay.className = "numeric-display-half svg-clear";
@@ -16274,6 +16294,12 @@ module.exports = function () {
     };
 
     numericDisplay.onclick = function () {
+      if (keypad.isNumericOpen) {
+        return;
+      }
+      keypad.isBeatsOpen = false;
+      keypad.isNumericOpen = true;
+
       var buttons = document.getElementsByClassName('beatsButton');
       numericDisplay.className += " selectedDisplay";
       beatsDisplay.className = "beats-display svg-clear";
@@ -16480,12 +16506,14 @@ module.exports = function () {
   };
 
   keypad.closeTabs = function createKeyPad(div) {
+    keypad.isBeatsOpen = false;
+    keypad.isNumericOpen = false;
     ko.cleanNode(div);
   };
   return keypad;
 }();
 
-},{"interact.js":15,"knockout":16,"svgbuilder.js":60}],29:[function(require,module,exports){
+},{"interact.js":15,"knockout":16,"svgbuilder.js":62}],29:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16603,7 +16631,7 @@ module.exports = function () {
   return motorBlock;
 }();
 
-},{"./keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],30:[function(require,module,exports){
+},{"./keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],30:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16740,7 +16768,7 @@ module.exports = function () {
   return pictureBlock;
 }();
 
-},{"icons.js":57,"interact.js":15,"svgbuilder.js":60}],31:[function(require,module,exports){
+},{"icons.js":59,"interact.js":15,"svgbuilder.js":62}],31:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16914,7 +16942,7 @@ module.exports = function () {
 	return printBlock;
 }();
 
-},{"./../variables.js":62,"fastr.js":56,"icons.js":57,"interact.js":15,"knockout":16,"svgbuilder.js":60}],32:[function(require,module,exports){
+},{"./../variables.js":64,"fastr.js":58,"icons.js":59,"interact.js":15,"knockout":16,"svgbuilder.js":62}],32:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17036,7 +17064,7 @@ module.exports = function () {
   return servoBlock;
 }();
 
-},{"./keypadTab.js":28,"knockout":16,"svgbuilder.js":60}],33:[function(require,module,exports){
+},{"./keypadTab.js":28,"knockout":16,"svgbuilder.js":62}],33:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17262,7 +17290,7 @@ module.exports = function () {
   return soundBlock;
 }();
 
-},{"icons.js":57,"interact.js":15,"svgbuilder.js":60}],34:[function(require,module,exports){
+},{"icons.js":59,"interact.js":15,"svgbuilder.js":62}],34:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17359,7 +17387,7 @@ module.exports = function () {
   return twoMotorBlock;
 }();
 
-},{"./keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],35:[function(require,module,exports){
+},{"./keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],35:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17466,7 +17494,7 @@ module.exports = function () {
   return variableAddBlock;
 }();
 
-},{"./../../variables.js":62,"./../keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],36:[function(require,module,exports){
+},{"./../../variables.js":64,"./../keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],36:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17566,7 +17594,7 @@ module.exports = function () {
   return variableSetBlock;
 }();
 
-},{"./../../variables.js":62,"./../calcpad.js":20,"./../keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],37:[function(require,module,exports){
+},{"./../../variables.js":64,"./../calcpad.js":20,"./../keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],37:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17647,7 +17675,7 @@ module.exports = function () {
   return waitBlock;
 }();
 
-},{"./keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],38:[function(require,module,exports){
+},{"./keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],38:[function(require,module,exports){
 'use strict';
 
 /* eslint-disable max-depth */
@@ -17731,6 +17759,11 @@ module.exports = function () {
 		conductor.tbe.forEachDiagramBlock(function (b) {
 			b.svgRect.classList.remove('running-block');
 		});
+
+		if (dso.deviceName != undefined && dso.disconnectButton != undefined) {
+			//console.log("YP", dso.deviceName);
+			//dso.updateScreenName();
+		}
 
 		if (conductor.runningBlocks.length > 0) {
 			for (var i = 0; i < conductor.runningBlocks.length; i++) {
@@ -18010,7 +18043,7 @@ module.exports = function () {
 	return conductor;
 }();
 
-},{"./cxn.js":39,"./overlays/actionDots.js":43,"./overlays/deviceScanOverlay.js":46,"./variables.js":62,"log.js":58}],39:[function(require,module,exports){
+},{"./cxn.js":39,"./overlays/actionDots.js":43,"./overlays/deviceScanOverlay.js":46,"./variables.js":64,"log.js":60}],39:[function(require,module,exports){
 'use strict';
 
 /*
@@ -18349,6 +18382,17 @@ module.exports = function factory() {
 		cxn.connectionChanged(cxn.devices);
 	};
 
+	cxn.writeDisconnect = function () {
+		console.log("WRITING DC", cxn.botName);
+		cxn.write(cxn.botName, '(dc)');
+		var count = 0;
+		var intervalID = setInterval(function () {
+			if (++count === 20) {
+				window.clearInterval(intervalID);
+			}
+		}, 50);
+	};
+
 	cxn.disconnectAll = function () {
 		if (cxn.appBLE) {
 			for (var deviceName in cxn.devices) {
@@ -18360,12 +18404,16 @@ module.exports = function factory() {
 		} else {
 			// More to do here once multiple connectios allowed.
 			if (cxn.webBLEWrite !== null) {
-				var dev = cxn.webBLEWrite.service.device;
-				if (dev.gatt.connected) {
-					dev.gatt.disconnect();
-				}
-				cxn.webBLEWrite = null;
-				cxn.webBLERead = null;
+				cxn.writeDisconnect();
+				setTimeout(function () {
+					var dev = cxn.webBLEWrite.service.device;
+					console.log("here", cxn.botName, cxn.webBLEWrite, cxn.webBLERead);
+					if (dev.gatt.connected) {
+						dev.gatt.disconnect();
+					}
+					cxn.webBLEWrite = null;
+					cxn.webBLERead = null;
+				}, 1000);
 			}
 		}
 	};
@@ -18468,6 +18516,13 @@ module.exports = function factory() {
 	};
 
 	cxn.write = function (name, message) {
+		cxn.writeHelper(name, message, 0);
+	};
+
+	cxn.writeHelper = function (name, message, retryCount) {
+		if (retryCount >= 3) {
+			return;
+		}
 		if (!cxn.calibrating) {
 			//console.log(cxn.calibrating);
 			try {
@@ -18484,10 +18539,10 @@ module.exports = function factory() {
 						if (cxn.webBLEWrite) {
 							cxn.webBLEWrite.writeValue(buffer).then(function () {
 
-								//log.trace('write succeded', message);
+								log.trace('write succeeded', message);
 							}).catch(function () {
-								//log.trace('write failed', message, error);
-								setTimeout(cxn.write(name, message), 50);
+								log.trace('write failed', message);
+								setTimeout(cxn.writeHelper(name, message, retryCount + 1), 50);
 							});
 						}
 						//var cxn.webBLEWrite = null;
@@ -18509,7 +18564,7 @@ module.exports = function factory() {
 	return cxn;
 }();
 
-},{"knockout":16,"log.js":58}],40:[function(require,module,exports){
+},{"knockout":16,"log.js":60}],40:[function(require,module,exports){
 'use strict';
 
 /*
@@ -18687,7 +18742,7 @@ module.exports = function () {
   return b;
 }();
 
-},{"./blocks/colorStripBlock.js":21,"./blocks/flowBlocks.js":22,"./blocks/identityBlocks/identityAccelerometerBlock.js":23,"./blocks/identityBlocks/identityBlock.js":24,"./blocks/identityBlocks/identityButtonBlock.js":25,"./blocks/identityBlocks/identityGyroBlock.js":26,"./blocks/identityBlocks/identityTemperatureBlock.js":27,"./blocks/motorBlock.js":29,"./blocks/pictureBlock.js":30,"./blocks/printBlock.js":31,"./blocks/servoBlock.js":32,"./blocks/soundBlock.js":33,"./blocks/twoMotorBlock.js":34,"./blocks/variables/variableAddBlock.js":35,"./blocks/variables/variableSetBlock.js":36,"./blocks/waitBlock.js":37,"log.js":58,"svgbuilder.js":60}],42:[function(require,module,exports){
+},{"./blocks/colorStripBlock.js":21,"./blocks/flowBlocks.js":22,"./blocks/identityBlocks/identityAccelerometerBlock.js":23,"./blocks/identityBlocks/identityBlock.js":24,"./blocks/identityBlocks/identityButtonBlock.js":25,"./blocks/identityBlocks/identityGyroBlock.js":26,"./blocks/identityBlocks/identityTemperatureBlock.js":27,"./blocks/motorBlock.js":29,"./blocks/pictureBlock.js":30,"./blocks/printBlock.js":31,"./blocks/servoBlock.js":32,"./blocks/soundBlock.js":33,"./blocks/twoMotorBlock.js":34,"./blocks/variables/variableAddBlock.js":35,"./blocks/variables/variableSetBlock.js":36,"./blocks/waitBlock.js":37,"log.js":60,"svgbuilder.js":62}],42:[function(require,module,exports){
 'use strict';
 
 /*
@@ -18851,7 +18906,7 @@ module.exports = function () {
     // System basically makes room for 10 dots.
     // some from right, some from left, some in the center.
     // Still a bit hard coded.
-    var slotw = w * 0.1;
+    var slotw = w * 0.094;
     var edgeSpacing = 7;
     var x = 0;
     var dotd = 66; // diameter
@@ -19161,6 +19216,11 @@ module.exports = function () {
   };
 
   actionDots.doPointerEvent = function (event) {
+    // if tutorial is active, ignore
+    if (app.isShowingTutorial) {
+      return;
+    }
+
     var elt = document.elementFromPoint(event.clientX, event.clientY);
     var t = event.type;
     var adi = actionDots.activeIndex;
@@ -19205,6 +19265,9 @@ module.exports = function () {
     // outside the element.
     // SVG items with the 'action-dot' class will process these events.
     interact('.action-dot', { context: svg }).draggable({}).on('down', function (event) {
+      if (app.isShowingTutorial) {
+        return;
+      }
       var dotIndex = event.currentTarget.getAttribute('dotIndex');
       actionDots.activeIndex = dotIndex;
       actionDots.dotMap[dotIndex].activate(1);
@@ -19221,7 +19284,7 @@ module.exports = function () {
   return actionDots;
 }();
 
-},{"../blocks/identityBlocks/identityBlock.js":24,"./../appMain.js":18,"./deviceScanOverlay.js":46,"editStyle.js":55,"fastr.js":56,"interact.js":15,"svgbuilder.js":60}],44:[function(require,module,exports){
+},{"../blocks/identityBlocks/identityBlock.js":24,"./../appMain.js":18,"./deviceScanOverlay.js":46,"editStyle.js":57,"fastr.js":58,"interact.js":15,"svgbuilder.js":62}],44:[function(require,module,exports){
 'use strict';
 
 /*
@@ -19323,7 +19386,7 @@ module.exports = function () {
   return calibrationOverlay;
 }();
 
-},{"./../appMain.js":18,"./../cxn.js":39,"./deviceScanOverlay.js":46,"./overlays.js":49,"editStyle.js":55}],45:[function(require,module,exports){
+},{"./../appMain.js":18,"./../cxn.js":39,"./deviceScanOverlay.js":46,"./overlays.js":49,"editStyle.js":57}],45:[function(require,module,exports){
 'use strict';
 
 /*
@@ -19391,7 +19454,7 @@ module.exports = function () {
   return debugMode;
 }();
 
-},{"./overlays.js":49,"log.js":58}],46:[function(require,module,exports){
+},{"./overlays.js":49,"log.js":60}],46:[function(require,module,exports){
 'use strict';
 
 /*
@@ -19465,6 +19528,7 @@ module.exports = function () {
   };
 
   dso.updateScreenName = function (botName) {
+    console.log("update name", botName);
     dso.deviceName = botName;
     dso.disconnectButton.disabled = dso.deviceName === dso.nonName;
     // console.log(dso.decoratedName())
@@ -19507,6 +19571,12 @@ module.exports = function () {
     };
   };
 
+  dso.initTestVars = function (e) {
+    dso.testKeyTCount = 0;
+    dso.testKeyCCount = 0;
+    dso.testBotsShowing = false;
+  };
+
   dso.testButton = function (e) {
     if (e.pageX < 60 && e.pageY < 200 && !dso.testBotsShowing) {
       dso.testBotsShowing = true;
@@ -19518,23 +19588,27 @@ module.exports = function () {
   };
 
   dso.addTestBots = function () {
+    console.log("Adding test bots");
     var testNames = ['CUPUR', 'CAPAZ', 'FELIX', 'SADOW', 'NATAN', 'GATON', 'FUTOL', 'BATON', 'FILON', 'CAPON'];
     for (var i in testNames) {
       dso.addNewBlock(testNames[i], 0, icons.t55);
     }
+    dso.testBotsShowing = true;
   };
 
   dso.removeAllBots = function () {
+    console.log("Removing all bots");
     dso.tbots = {};
     dso.svg.removeChild(dso.tbotGroup);
     dso.tbotGroup = dso.svg.appendChild(svgb.createGroup('', 0, 0));
+    dso.testBotsShowing = false;
   };
 
-  dso.testKeyTCount = 0;
-  dso.testKeyCCount = 0;
   dso.keyEvent = function (e) {
     if (e.key === 'T') {
-      dso.testKeyTCount += 1;
+      if (dso.testBotsShowing === false) {
+        dso.testKeyTCount += 1;
+      }
     } else if (e.key === 'C') {
       dso.testKeyCCount += 1;
     } else {
@@ -19593,6 +19667,35 @@ module.exports = function () {
 
     dso.updateLabel();
     dso.updateScreenName(dso.deviceName);
+
+    // setup dragging
+    dso.initDragScroll(dso.svg);
+
+    dso.initTestVars();
+  };
+
+  dso.initDragScroll = function () {
+    var shell = document.getElementById("dsoSvgShell");
+    var svg = document.getElementById("dsoSVG");
+    dso.pos = { top: 0, left: 0, x: 0, y: 0 };
+    dso.pointerDown = false;
+    interact('.dso-svg-backgound').on('down', function (event) {
+      dso.pointerDown = true;
+      dso.pos = {
+        left: shell.scrollLeft,
+        top: shell.scrollTop,
+        x: event.clientX,
+        y: event.clientY
+      };
+    }).on('move', function (event) {
+      if (dso.pointerDown) {
+        var dx = event.clientX - dso.pos.x;
+        var dy = event.clientY - dso.pos.y;
+        shell.scrollTop = dso.pos.top - dy;
+      }
+    }).on('up', function (event) {
+      dso.pointerDown = false;
+    });
   };
 
   dso.sorryCantDoIt = function () {
@@ -19607,6 +19710,13 @@ module.exports = function () {
     var row = Math.floor(i / w);
     var col = i % w;
     return { x: 20 + col * 150, y: 20 + row * 150 };
+  };
+
+  // calculates min height of svg based on number of bots needed to be displayed
+  dso.updateSVGHeight = function () {
+    var num = Object.keys(dso.tbots).length;
+    var height = 20 + Math.ceil(num / dso.columns) * 150;
+    document.getElementById('dsoSVG').style.height = height + 'px';
   };
 
   dso.pauseResume = function (active) {
@@ -19633,10 +19743,14 @@ module.exports = function () {
       var tb = dso.tbots[t];
       tb.setLocation(loc.x, loc.y);
     }
+    // sets height of tbots
+    dso.updateSVGHeight();
   };
 
   // Close the overlay.
   dso.exit = function () {
+    console.log("exit");
+
     document.body.removeEventListener('keydown', dso.keyEvent, false);
 
     interact.debug().defaultOptions._holdDuration = dso.saveHold;
@@ -19649,11 +19763,14 @@ module.exports = function () {
     dso.background = null;
     dso.tbotGroup = null;
 
-    if (cxn.scanning) {
-      cxn.stopScanning();
-      dso.watch.dispose();
-      dso.watch = null;
-    }
+    // if (cxn.scanning) {
+    //   console.log("cxn.scanning");
+    //   cxn.stopScanning();
+    //   dso.watch.dispose();
+    //   dso.watch = null;
+    // } else {
+    //   console.log("not cxn.scanning");
+    // }
 
     var botName = dso.deviceName;
     var message = '(vs)';
@@ -19661,18 +19778,22 @@ module.exports = function () {
   };
 
   dso.tryConnect = function (tb) {
+    console.log("tryconnect", tb);
     if (cxn.scanUsesHostDialog()) {
+      console.log("trycon1");
       // In Host dialog mode (used on browsers) a direct connection
       // can be made, so just bring up the host scan. That will
       // disconnect any current as well.
       dso.onScanButton();
     } else if (!tb.selected) {
+      console.log("trycon2");
       // Right now only one connection is allowed
       //tb.setConnectionStatus(cxn.statusEnum.CONNECTING);
       cxn.disconnectAll();
       cxn.connect(tb.name);
       dso.selectDevice(tb.name);
     } else {
+      console.log("trycon3");
       // Just clear this one
       // Only one is connected so use the main button.
       cxn.disconnectAll();
@@ -19682,13 +19803,16 @@ module.exports = function () {
   dso.onScanButton = function (e) {
     if (cxn.scanUsesHostDialog()) {
       if (cxn.scanning) {
+        console.log("onScanButton1");
         cxn.stopScanning();
         dso.watch.dispose();
         dso.watch = null;
       } else {
+        console.log("onScanButton2");
         dso.onDisconnectButton();
         dso.refreshList(cxn.devices);
         dso.watch = cxn.connectionChanged.subscribe(dso.refreshList);
+        console.log(cxn.devices);
         cxn.startScanning();
       }
     }
@@ -19706,12 +19830,14 @@ module.exports = function () {
     };
     tb.setConnectionStatus(status);
     dso.tbots[key] = tb;
+    dso.updateSVGHeight();
     return tb;
   };
 
   // refreshList() -- rebuilds the UI list based on devices the
   // connection manager knows about.
   dso.refreshList = function (bots) {
+    console.log("refreshList");
     var cxnSelectedBot = dso.nonName;
     for (var key in bots) {
       var status = bots[key].status;
@@ -19732,7 +19858,7 @@ module.exports = function () {
   return dso;
 }();
 
-},{"./../cxn.js":39,"./overlays.js":49,"fastr.js":56,"icons.js":57,"interact.js":15,"svgbuilder.js":60,"tbot.js":61}],47:[function(require,module,exports){
+},{"./../cxn.js":39,"./overlays.js":49,"fastr.js":58,"icons.js":59,"interact.js":15,"svgbuilder.js":62,"tbot.js":63}],47:[function(require,module,exports){
 'use strict';
 
 /*
@@ -19953,7 +20079,7 @@ module.exports = function () {
   return dov;
 }();
 
-},{"./../conductor.js":38,"./deviceScanOverlay.js":46,"./overlays.js":49,"slideControl.js":59}],48:[function(require,module,exports){
+},{"./../conductor.js":38,"./deviceScanOverlay.js":46,"./overlays.js":49,"slideControl.js":61}],48:[function(require,module,exports){
 'use strict';
 
 /*
@@ -20113,13 +20239,14 @@ module.exports = function () {
     screens.fileOverlay = require('./fileOverlay.js');
     screens.splashOverlay = require('./splashOverlay.js');
     screens.calibrationOverlay = require('./calibrationOverlay.js');
+    screens.tutorialOverlay = require('./tutorialOverlay.js');
     overlays.screens = screens;
 
     return overlays;
   };
 
   overlays.insertHTML = function (overlayHTML) {
-    var body = '\n    <div id=\'overlayRoot\' style=\'top:80px; height:calc(100% - 80px);\'>\n      <div id=\'overlayShell\' >' + overlayHTML + '\n      </div>\n    </div>';
+    var body = '\n    <div id=\'overlayRoot\'>\n      <div id=\'overlayShell\' >' + overlayHTML + '\n      </div>\n    </div>';
     overlays.overlayLayer.innerHTML = body;
     overlays.overlayShell = document.getElementById('overlayShell');
   };
@@ -20204,7 +20331,7 @@ module.exports = function () {
   return overlays;
 }();
 
-},{"./calibrationOverlay.js":44,"./debugOverlay.js":45,"./deviceScanOverlay.js":46,"./driveOverlay.js":47,"./fileOverlay.js":48,"./splashOverlay.js":50,"editStyle.js":55,"log.js":58}],50:[function(require,module,exports){
+},{"./calibrationOverlay.js":44,"./debugOverlay.js":45,"./deviceScanOverlay.js":46,"./driveOverlay.js":47,"./fileOverlay.js":48,"./splashOverlay.js":50,"./tutorialOverlay.js":52,"editStyle.js":57,"log.js":60}],50:[function(require,module,exports){
 'use strict';
 
 /*
@@ -20296,7 +20423,335 @@ module.exports = function () {
   return splashOverlay;
 }();
 
-},{"./../appMain.js":18,"./overlays.js":49,"editStyle.js":55}],51:[function(require,module,exports){
+},{"./../appMain.js":18,"./overlays.js":49,"editStyle.js":57}],51:[function(require,module,exports){
+"use strict";
+
+/*
+Copyright (c) 2020 Trashbots - SDG
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+// Drive mode overlay allows users to diretly control the motors and other IO.
+module.exports = function () {
+
+  var tutorialData = {};
+
+  function TutorialPage(name, type, titleText, aboutText) {
+    return {
+      "name": name,
+      "type": type,
+      "titleText": titleText,
+      "aboutText": aboutText
+    };
+  }
+
+  tutorialData.pages = [TutorialPage('intro', 'basic', 'TBlocks Tutorial - Introduction', 'Welcome to the tutorial for TBlocks! Through this, you will learn about each of the different action buttons and coding blocks. At any point, you can click “End Tutorial” to close this panel. Click “Next Page” to continue!'), TutorialPage('play', 'dot', 'TBlocks Tutorial - Play Button', 'This is the “Play” button. You will use this button each time you want to run your code on the Bot.'), TutorialPage('stop', 'dot', 'TBlocks Tutorial - Stop Button', 'This is the “Stop” button. You will use this button each time you want to stop running your code on the Bot. This will stop the motors and clear the LED matrix!'), TutorialPage('driveOverlay', 'dot', 'TBlocks Tutorial - Drive Button', 'This is the “Gamepad” button. Clicking this button will allow you to drive your robot around using the gamepad controller.'), TutorialPage('debugOverlay', 'dot', 'TBlocks Tutorial - Debug Button', 'This is the “Debug” button. This is a sneak peek into what’s going on in the background!'), TutorialPage('pages', 'dot', 'TBlocks Tutorial - Pages Button', 'This is the “Pages” button. Click between the pages to code up to 5 programs at once!'), TutorialPage('edit', 'dot', 'TBlocks Tutorial - Edit Button', 'This is the “Edit” button. Use this drop down for functions such as “Copy”, “Paste”, “Delete All”, and “Settings”.'), TutorialPage('calibrate', 'dot', 'TBlocks Tutorial - Calibrate Button', 'This is the “Calibrate” button. This button can be used to calibrate the motors to drive perfectly straight. Make sure you’re on the most updated version (click the button to check)!'), TutorialPage('tutorialOverlay', 'dot', 'TBlocks Tutorial - Tutorial Button', 'This is the “Tutorial” button. Use this button at any time to access this tutorial again!'), TutorialPage('deviceScanOverlay', 'dot', 'TBlocks Tutorial - Device Scan Button', 'This is the “Device Scan” button. Click here to connect a Bot to your app!'), TutorialPage('start', 'palette', 'TBlocks Tutorial - Start Palette', 'This is the “Start” Palette. These are the blocks needed to start a chain. Click below to see what each of the blocks specifically does!'), TutorialPage('action', 'palette', 'TBlocks Tutorial - Action Palette', 'This is the “Action” Palette. These are the blocks that do things on the Bot. Use this palette to play with the LED display, run the motors, play music, or use variables. Click below to see what each of the blocks specifically does!'), TutorialPage('control', 'palette', 'TBlocks Tutorial - Control Palette', 'This is the “Control” Palette. These are the blocks that control the flow of the program. There is a looping block and a wait block. Click below to see what each of the blocks specifically does!')];
+
+  tutorialData.blockPages = {
+    identity: TutorialPage('identity', 'block', 'Run Block', 'Runs its program when the “Play” button is pressed (in the top left corner)'),
+    identityAccelerometer: TutorialPage('identityAccelerometer', 'block', 'Accelerometer Block', 'Runs its program when the Bot senses a certain acceleration'),
+    identityButton: TutorialPage('identityButton', 'block', 'Button Block', 'Runs its program when "A", "B", or "A + B" button(s) are clicked'),
+    identityTemperature: TutorialPage('identityTemperature', 'block', 'Temperature Block', 'Runs its program when the Bot senses a certain temperature'),
+
+    picture: TutorialPage('picture', 'block', 'Smile Block', 'Shows an image on the LED display'),
+    sound: TutorialPage('sound', 'block', 'Sound Block', 'Plays a sequence of up to 4 notes'),
+    motor: TutorialPage('motor', 'block', 'Single Motor Block', 'Runs a single motor (1 or 2) for a set time and at a set speed'),
+    twoMotor: TutorialPage('twoMotor', 'block', 'Double Motor Block', 'Runs both motors for a set time and at a set speed'),
+    variableSet: TutorialPage('variableSet', 'block', 'Set Block', 'Sets variable A, B, or C to a certain value'),
+    variableAdd: TutorialPage('variableAdd', 'block', 'Add Block', 'Adds or subtracts a value to variable A, B, or C'),
+    print: TutorialPage('print', 'block', 'Print Block', 'Prints the value of a variable OR will print the value of a sensor'),
+
+    wait: TutorialPage('wait', 'block', 'Wait Block', 'Pauses the program for a certain amount of time'),
+    loop: TutorialPage('loop', 'block', 'Loop Block', 'Loops through a sequence of TBlocks a set amount of times'),
+    tail: TutorialPage('tail', 'block', 'Loop Block', 'Loops through a sequence of TBlocks a set amount of times')
+  };
+
+  return tutorialData;
+}();
+
+},{}],52:[function(require,module,exports){
+'use strict';
+
+/*
+Copyright (c) 2020 Trashbots - SDG
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+// Drive mode overlay allows users to diretly control the motors and other IO.
+module.exports = function () {
+
+  var tutorialOverlay = {};
+
+  var editStyle = require('editStyle.js');
+  var app = require('./../appMain.js');
+  var tbe = app.tbe;
+  var overlays = require('./overlays.js');
+  var dots = require('./actionDots.js');
+
+  var tutorialData = require('./tutorialData.js');
+
+  var tutorialPages = tutorialData.pages;
+  var tutorialBlockPages = tutorialData.blockPages;
+
+  app.isShowingTutorial = false;
+
+  var curPageIndex = 0;
+
+  // External function for putting it all together.
+  tutorialOverlay.start = function () {
+    app.isShowingTutorial = true;
+
+    overlays.insertHTML('\n        <style id=\'tutorial-text-id\'>\n          tutorial-text { font-size:18px; }\n        </style>\n        <div id=\'tutorialOverlay\'>\n            <div id=\'tutorialDialog\'>\n              <p id="tutorial-title" class=\'tutorial-title\'></p>\n              <p id = \'tutorial-about\' class=\'tutorial-body tutorial-text\'></p>\n              <br>\n              <div align=\'center\'>\n                  <button id=\'tutorial-prev\' class=\'tutorial-button tutorial-text\'>Previous Page</button>\n                  <button id=\'tutorial-next\' class=\'tutorial-button tutorial-text\'>Next Page</button>\n                  <button id=\'tutorial-end\' class=\'tutorial-button tutorial-text\'>End Tutorial</button>\n              </div>\n              <br>\n              <p id="tutorial-block-title" class=\'tutorial-title\'></p>\n              <p id = \'tutorial-block-about\' class=\'tutorial-body tutorial-text\'></p>\n              <br>\n            </div>\n        </div>');
+
+    // Step to next tutorial page
+    var prevButton = document.getElementById('tutorial-prev');
+    prevButton.onclick = tutorialOverlay.prevTutorial;
+
+    // Step to next tutorial page
+    var nextButton = document.getElementById('tutorial-next');
+    nextButton.onclick = tutorialOverlay.nextTutorial;
+
+    // Exit simply go back to editor.
+    var endButton = document.getElementById('tutorial-end');
+    endButton.onclick = tutorialOverlay.endTutorial;
+
+    tutorialOverlay.showTutorialPage(0);
+    tutorialOverlay.deactivateAllButtons();
+  };
+
+  tutorialOverlay.resize = function () {
+    var overlay = document.getElementById('tutorialOverlay');
+    var w = overlay.clientWidth;
+    var h = overlay.clientHeight;
+    var scale = editStyle.calcSreenScale(w, h);
+
+    var fs = 20 * scale + 'px';
+    var elts = document.getElementsByClassName("tutorial-text");
+    var i = 0;
+    for (i = 0; i < elts.length; i++) {
+      elts[i].style.fontSize = fs;
+    }
+
+    var bh = 50 * scale + 'px';
+    elts = document.getElementsByClassName("tutorial-button");
+    for (i = 0; i < elts.length; i++) {
+      elts[i].style.height = bh;
+    }
+
+    // resize based on tutorial page type (palette vs. non-palette)
+
+    var root = document.getElementById('overlayRoot');
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var scale = editStyle.calcSreenScale(w, h);
+    var baseValue = 80 * scale;
+    var topOffset;
+    var botOffset;
+    if (tutorialPages[curPageIndex].type === "palette") {
+      topOffset = 0;
+      botOffset = 2 * baseValue;;
+    } else {
+      topOffset = baseValue;
+      botOffset = 0;
+    }
+    var tstr = topOffset.toString() + 'px';
+    var hstr = "calc(100% - " + (topOffset + botOffset).toString() + "px)";
+    root.style.height = hstr;
+    root.style.top = tstr;
+
+    var dialog = document.getElementById("tutorialDialog");
+    dialog.style.top = "calc(4% + " + (baseValue - topOffset).toString() + "px)";
+    console.log("DIALOG", dialog.style.top);
+  };
+
+  tutorialOverlay.prevTutorial = function () {
+    // console.log("prevTutorial");
+    tutorialOverlay.deselectPaletteBlocks();
+    tutorialOverlay.showTutorialPage(curPageIndex - 1);
+  };
+
+  tutorialOverlay.nextTutorial = function () {
+    // console.log("nextTutorial");
+    tutorialOverlay.deselectPaletteBlocks();
+    tutorialOverlay.showTutorialPage(curPageIndex + 1);
+  };
+
+  tutorialOverlay.showTutorialPage = function (index) {
+    console.log("showing page " + index);
+    curPageIndex = index;
+
+    var page = tutorialPages[curPageIndex];
+
+    // change text of tutorial page
+    var tutorialTitle = document.getElementById("tutorial-title");
+    var tutorialAbout = document.getElementById("tutorial-about");
+    tutorialTitle.innerHTML = page.titleText;
+    tutorialTitle.innerHTML += " (" + (curPageIndex + 1) + "/" + tutorialPages.length + ")";
+    tutorialAbout.innerHTML = page.aboutText;
+
+    //resize
+    tutorialOverlay.resize();
+
+    // if tutorial page for dot, highlight the dot
+    var tutorialOverlayHTML = document.getElementById("tutorialOverlay");
+    tutorialOverlay.deactivateAllButtons();
+    if (page.type === "dot") {
+      dots.commandDots[page.name].activate(3);
+    }
+
+    // switch tabs
+    if (page.type === "palette") {
+      tbe.switchTabsTutorial(page.name);
+    }
+
+    // enable/disable prev/next buttons
+    var prevButton = document.getElementById('tutorial-prev');
+    var nextButton = document.getElementById('tutorial-next');
+    prevButton.disabled = index == 0;
+    nextButton.disabled = index == tutorialPages.length - 1;
+
+    // reset tutorial block page
+    document.getElementById("tutorial-block-title").innerHTML = "";
+    document.getElementById("tutorial-block-about").innerHTML = "";
+
+    // default block selected
+    if (page.type == "palette") {
+      if (page.name == 'start') {
+        tutorialOverlay.showBlockDetails(app.tbe.getPaletteBlockByName('identity'));
+      } else if (page.name == 'action') {
+        tutorialOverlay.showBlockDetails(app.tbe.getPaletteBlockByName('picture'));
+      } else if (page.name == 'control') {
+        tutorialOverlay.showBlockDetails(app.tbe.getPaletteBlockByName('wait'));
+      }
+    }
+  };
+
+  tutorialOverlay.deactivateAllButtons = function () {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = Object.values(dots.commandDots)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var val = _step.value;
+
+        val.activate(0);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+  };
+
+  tutorialOverlay.showBlockDetails = function (block) {
+    console.log("showBlockDetails", block);
+    var page = tutorialBlockPages[block.name];
+    // update page information
+    var tutorialBlockTitle = document.getElementById("tutorial-block-title");
+    var tutorialBlockAbout = document.getElementById("tutorial-block-about");
+    tutorialBlockTitle.innerHTML = page.titleText;
+    tutorialBlockAbout.innerHTML = page.aboutText;
+    // highlight only the selected block
+    tutorialOverlay.deselectPaletteBlocks();
+    block.svgRect.classList.add('selected-block');
+    // if it is the loop block, highlight both
+    if (block.name == "loop") {
+      app.tbe.getPaletteBlockByName("tail").svgRect.classList.add('selected-block');
+    } else if (block.name == "tail") {
+      app.tbe.getPaletteBlockByName("loop").svgRect.classList.add('selected-block');
+    }
+  };
+
+  tutorialOverlay.deselectPaletteBlocks = function () {
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+      for (var _iterator2 = document.querySelectorAll(".selected-block")[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var b = _step2.value;
+
+        b.classList.remove('selected-block');
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
+  };
+
+  tutorialOverlay.endTutorial = function () {
+    console.log("endTutorial");
+    app.isShowingTutorial = false;
+    tutorialOverlay.deactivateAllButtons();
+    tutorialOverlay.deselectPaletteBlocks();
+    overlays.hideOverlay(null);
+  };
+
+  tutorialOverlay.exit = function () {};
+
+  tutorialOverlay.showLaunchAboutBox = function () {
+    var value = app.storage.getItem('teakBlockShowAboutBox');
+    return value === null || value === true;
+  };
+
+  return tutorialOverlay;
+}();
+
+},{"./../appMain.js":18,"./actionDots.js":43,"./overlays.js":49,"./tutorialData.js":51,"editStyle.js":57}],53:[function(require,module,exports){
 'use strict';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
@@ -20388,6 +20843,9 @@ module.exports = function () {
 	tbe.clearStates = function clearStates(block) {
 		// Clear any showing forms or multi step state.
 		// If the user has interacted with a general part of the editor.
+		if (app.isShowingTutorial) {
+			return;
+		}
 		actionDots.reset();
 		app.overlays.hideOverlay(null);
 		this.components.blockSettings.hide(block);
@@ -20451,9 +20909,27 @@ module.exports = function () {
 			tbe.currentDoc = docName;
 			var loadedDocText = app.storage.getItem(docName);
 			if (loadedDocText !== null) {
-				teakText.textToBlocks(tbe, loadedDocText);
+				//teakText.textToBlocks(tbe, loadedDocText);
+				tbe.textToBlocks(docName, loadedDocText);
 			}
 			actionDots.setDocTitle(docName.substring(3, 4));
+		}
+	};
+
+	tbe.textToBlocks = function (docName, docText) {
+		if (docName === null) {
+			docName = tbe.currentDoc;
+		}
+		//teakText.textToBlocks(tbe, docText);
+		try {
+			teakText.textToBlocks(tbe, docText);
+		} catch (error) {
+			var blankDoc = "()";
+
+			tbe.clearStates();
+			tbe.clearDiagramBlocks();
+			app.storage.setItem(docName, blankDoc);
+			teakText.textToBlocks(tbe, blankDoc);
 		}
 	};
 
@@ -21398,16 +21874,33 @@ module.exports = function () {
 	};
 
 	tbe.identityAutoPlace = function identityAutoPlace(block) {
-		tbe.forEachDiagramBlock(function (compare) {
-			//console.log("compare", tbe.intersectingArea(compare, block));
-			if (tbe.intersectingArea(compare, block) > 100 && compare !== block && block.bottom + 120 < tbe.height - 150) {
-				block.dmove(0, 120);
-				tbe.identityAutoPlace(block);
+		while (block.bottom + 120 <= tbe.height - 100) {
+			// check if intersecting
+			var signal = { valid: true };
+			tbe.forEachDiagramBlock(function (compare) {
+				if (tbe.intersectingArea(compare, block) > 100 && compare !== block && block.bottom + 120 < tbe.height - 150) {
+					signal.valid = false;
+					return;
+				}
+			});
+			if (signal.valid) {
 				return;
-			} else if (block.bottom + 120 > tbe.height - 100) {
-				tbe.deleteChunk(block, block);
+			} else {
+				block.dmove(0, 120);
 			}
-		});
+		}
+		tbe.deleteChunk(block, block);
+
+		// tbe.forEachDiagramBlock(function (compare) {
+		// 	//console.log("compare", tbe.intersectingArea(compare, block));
+		// 	if (tbe.intersectingArea(compare, block) > 100 && compare !== block && block.bottom + 120 < tbe.height - 150) {
+		// 		block.dmove(0, 120);
+		// 		tbe.identityAutoPlace(block);
+		// 		return;
+		// 	} else if (block.bottom + 120 > tbe.height - 100) {
+		// 		tbe.deleteChunk(block, block);
+		// 	}
+		// });
 	};
 
 	tbe.keyEvent = function (e) {
@@ -21559,18 +22052,30 @@ module.exports = function () {
 		interact('.drag-group')
 		// Pointer events.
 		.on('down', function (event) {
+			if (app.isShowingTutorial) {
+				return;
+			}
 			tbe.pointerDownObject = event.target;
 		}).on('tap', function (event) {
 			var block = thisTbe.elementToBlock(event.target);
 			if (block !== null && block.isPaletteBlock) {
 				// Tapping on an palette item will place it on the sheet.
-				tbe.autoPlace(block);
+				var tutorialOverlay = require("./overlays/tutorialOverlay.js");
+				if (app.isShowingTutorial) {
+					var block = thisTbe.elementToBlock(event.target);
+					tutorialOverlay.showBlockDetails(block);
+				} else {
+					tbe.autoPlace(block);
+				}
 			} else {
 				// Tapping on diagram block brings up a config page.
 				actionDots.reset();
 				thisTbe.components.blockSettings.tap(block);
 			}
 		}).on('up', function (event) {
+			if (app.isShowingTutorial) {
+				return;
+			}
 			var block = thisTbe.elementToBlock(event.target);
 			if (block.rect.top > tbe.height - 100 && !block.isPaletteBlock) {
 				event.interaction.stop();
@@ -21586,6 +22091,9 @@ module.exports = function () {
 				}
 			}
 		}).on('move', function (event) {
+			if (app.isShowingTutorial) {
+				return;
+			}
 			try {
 				var interaction = event.interaction;
 				var block = thisTbe.elementToBlock(event.target);
@@ -21797,18 +22305,37 @@ module.exports = function () {
 
 		tbe.tabGroups = [];
 		tbe.tabGroups['start'] = tbe.dropAreaGroup.childNodes[0];
-		tbe.tabGroups['fx'] = tbe.dropAreaGroup.childNodes[1];
+		tbe.tabGroups['action'] = tbe.dropAreaGroup.childNodes[1];
 		tbe.tabGroups['control'] = tbe.dropAreaGroup.childNodes[2];
 
 		// For event routing.
 		tbe.tabGroups['start'].setAttribute('group', 'start');
-		tbe.tabGroups['fx'].setAttribute('group', 'fx');
+		tbe.tabGroups['action'].setAttribute('group', 'action');
 		tbe.tabGroups['control'].setAttribute('group', 'control');
 	};
 
 	tbe.switchTabs = function (group) {
 		// This moves the tab background to the front.
+		if (app.isShowingTutorial) {
+			return;
+		}
 		this.clearStates();
+		var tab = tbe.tabGroups[group];
+		this.dropArea = tab;
+		tbe.dropAreaGroup.appendChild(tab);
+		tbe.showTabGroup(group);
+	};
+
+	tbe.switchTabsTutorial = function (group) {
+		// This moves the tab background to the front.
+		// soft clearStates
+		actionDots.reset();
+		// app.overlays.hideOverlay(null);
+		this.components.blockSettings.hide();
+		tbe.forEachDiagramBlock(function (b) {
+			b.markSelected(false);
+		});
+
 		var tab = tbe.tabGroups[group];
 		this.dropArea = tab;
 		tbe.dropAreaGroup.appendChild(tab);
@@ -21871,10 +22398,20 @@ module.exports = function () {
 		// dropAreaGroup.appendChild(tbe.createTabSwitcherButton());
 	};
 
+	tbe.getPaletteBlockByName = function (name) {
+		for (var k in app.tbe.paletteBlocks) {
+			var b = app.tbe.paletteBlocks[k];
+			if (b.name == name) {
+				return b;
+			}
+		}
+		return null;
+	};
+
 	return tbe;
 }();
 
-},{"./appMain.js":18,"./conductor.js":38,"./fblock-settings.js":41,"./overlays/actionDots.js":43,"./teakselection":52,"./teaktext.js":53,"./trashBlocks.js":54,"assert":2,"icons.js":57,"interact.js":15,"log.js":58,"svgbuilder.js":60}],52:[function(require,module,exports){
+},{"./appMain.js":18,"./conductor.js":38,"./fblock-settings.js":41,"./overlays/actionDots.js":43,"./overlays/tutorialOverlay.js":52,"./teakselection":54,"./teaktext.js":55,"./trashBlocks.js":56,"assert":2,"icons.js":59,"interact.js":15,"log.js":60,"svgbuilder.js":62}],54:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22033,7 +22570,7 @@ module.exports = function () {
   return tbSelecton;
 }();
 
-},{"interact.js":15,"svgbuilder.js":60}],53:[function(require,module,exports){
+},{"interact.js":15,"svgbuilder.js":62}],55:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22230,7 +22767,7 @@ module.exports = function () {
   return teakText;
 }();
 
-},{"log.js":58,"teak":17}],54:[function(require,module,exports){
+},{"log.js":60,"teak":17}],56:[function(require,module,exports){
 "use strict";
 
 /*
@@ -22307,7 +22844,7 @@ module.exports = function () {
   return trashBlocks;
 }();
 
-},{}],55:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22367,7 +22904,7 @@ module.exports = function () {
   return editStyle;
 }();
 
-},{"log.js":58}],56:[function(require,module,exports){
+},{"log.js":60}],58:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22425,6 +22962,7 @@ module.exports = function factory() {
     loop: '\uF2EA',
     data: '\uF080',
     calibrate: '\uF24E', //f013 - settings // f24e - scale //f140 - target
+    tutorial: '\uF128', // make this the '?' symbol
     batteryFull: '\uF240',
     batteryThreeQuarters: '\uF241',
     batteryHalf: '\uF242',
@@ -22435,7 +22973,7 @@ module.exports = function factory() {
   return fastr;
 }();
 
-},{}],57:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22742,7 +23280,7 @@ module.exports = function () {
   return icons;
 }();
 
-},{"svgbuilder.js":60}],58:[function(require,module,exports){
+},{"svgbuilder.js":62}],60:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22812,7 +23350,7 @@ module.exports = function () {
     return log;
 }();
 
-},{}],59:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22923,7 +23461,7 @@ module.exports = function () {
   return slideControl;
 }();
 
-},{"./../variables.js":62,"editStyle.js":55,"icons.js":57,"interact.js":15,"svgbuilder.js":60}],60:[function(require,module,exports){
+},{"./../variables.js":64,"editStyle.js":57,"icons.js":59,"interact.js":15,"svgbuilder.js":62}],62:[function(require,module,exports){
 'use strict';
 
 /*
@@ -23055,7 +23593,7 @@ module.exports = function () {
   return svgBuilder;
 }();
 
-},{}],61:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 'use strict';
 
 /*
@@ -23181,7 +23719,7 @@ module.exports = function () {
   return tbot;
 }();
 
-},{"./../cxn.js":39,"fastr.js":56,"icons.js":57,"interact.js":15,"svgbuilder.js":60}],62:[function(require,module,exports){
+},{"./../cxn.js":39,"fastr.js":58,"icons.js":59,"interact.js":15,"svgbuilder.js":62}],64:[function(require,module,exports){
 'use strict';
 
 /*
