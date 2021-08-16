@@ -14395,17 +14395,14 @@ teak.Parser.prototype.tokenToObject = function (token) {
 
 /*
 Copyright (c) 2020 Trashbots - SDG
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -14476,14 +14473,14 @@ module.exports = function () {
 		if (window.cordova !== undefined) {
 			app.platformId = window.cordova.platformId;
 		} else {
-			app.platformId = "broswer";
+			app.platformId = "browser";
 		}
 
 		var isApp = app.isCordovaApp;
 		var w = window.innerWidth;
 		var h = window.innerHeight;
-		var luanchMessage = 'verson:' + app.buildFlags.version + ', isApp:' + app.isCordovaApp + ', platform:' + app.platformId + ', screen:(' + w + ', ' + h + ')';
-		log.trace(luanchMessage);
+		var launchMessage = 'version:' + app.buildFlags.version + ', isApp:' + app.isCordovaApp + ', platform:' + app.platformId + ', screen:(' + w + ', ' + h + ')';
+		log.trace(launchMessage);
 
 		// Once app has started these can be added.
 		document.addEventListener("pause", app.pause, false);
@@ -14519,38 +14516,7 @@ module.exports = function () {
 		// Initialize knockout databinding for documents DOM
 		tbe.components = {};
 		tbe.components.blockSettings = require('./block-settings.js');
-		ko.applyBindings(tbe.components);
 
-		var formsDiv = document.getElementById('tbe-forms');
-		tbe.components.blockSettings.insert(formsDiv);
-
-		var cookieSheet = document.getElementById('cookieSheet');
-		var cookiesAccepted = app.storage.getItem('cookiesAccepted');
-		if (!isApp && (cookiesAccepted === null || cookiesAccepted === false)) {
-			cookieSheet.innerHTML = '\n        <div id=\'cookiesGlass\'></dev>\n        <div id=\'cookiesForm\'>\n            <div id=\'cookiesNote\'>\n\t\t\t  <input id=\'cookiesButton\' type="button" value="  Accept Cookies  " style="float:right">\n              <p>\n                  We use cookies and similar technologies for document\n                  stroage functionality and to measure performance of application features.\n                  You consent to our cookies if you continue to use our website.\n              </p>\n            </div>\n        </div>\n        ';
-			var cookiesButton = document.getElementById('cookiesButton');
-			cookiesButton.onclick = app.hideCookieSheet;
-		}
-
-		// Some early experiments. seems to work well for desktop Chrome
-		// Safari has noticeable lag, with volume fluctuations.
-		tbe.audio = {
-			shortClick: document.getElementById('short-click'),
-			poof: document.getElementById('poof'),
-			playSound: function playSound(element) {
-				// TODO need means to turn off sounds
-				if (!gIOS /* tbe.components.appSettings.editorSounds() */) {
-						element.play();
-					}
-			}
-		};
-		tbe.audio.shortClick.preload = 'true';
-		tbe.audio.poof.preload = 'true';
-
-		var buttonsPages = [{ 'label': 'A', 'command': 'loadDocA' }, { 'label': 'B', 'command': 'loadDocB' }, { 'label': 'C', 'command': 'loadDocC' }, { 'label': 'D', 'command': 'loadDocD' }, { 'label': 'E', 'command': 'loadDocE' }];
-		var buttonsEdit = [{ 'label': fastr.copy, 'command': 'copy' }, { 'label': fastr.paste, 'command': 'paste' }, { 'label': fastr.trash, 'command': 'trash' }, { 'label': fastr.settings, 'command': 'splashOverlay' }];
-
-		tbe.deleteRay = null;
 		tbe.commands = {
 			'play': function play() {
 				app.conductor.playAll();
@@ -14599,15 +14565,59 @@ module.exports = function () {
 			},
 			'paste': function paste() {
 				if (tbe.copyTest !== null) {
-					app.teaktext.textToBlocks(tbe, tbe.copyText);
+					app.tbe.textToBlocks(null, tbe.copyText);
 				}
 			},
 			'save': function save() {
 				var currentDocText = app.teaktext.blocksToText(tbe.forEachDiagramChain);
 				app.storage.setItem(tbe.currentDoc, currentDocText);
 			},
-			'calibrate': 'calibrationOverlay'
+			'calibrate': 'calibrationOverlay',
+			'tutorialOverlay': 'tutorialOverlay'
 		};
+
+		ko.applyBindings(tbe.components);
+
+		var formsDiv = document.getElementById('tbe-forms');
+		tbe.components.blockSettings.insert(formsDiv);
+
+		var cookieSheet = document.getElementById('cookieSheet');
+		var cookiesAccepted = app.storage.getItem('cookiesAccepted');
+
+		app.storage.setItem('tutorialCompleted', "false");
+
+		if (!isApp && (cookiesAccepted === null || cookiesAccepted === false)) {
+			cookieSheet.innerHTML = '\n        <div id=\'cookiesGlass\'></dev>\n        <div id=\'cookiesForm\'>\n            <div id=\'cookiesNote\'>\n\t\t\t  <input id=\'cookiesButton\' type="button" value="  Accept Cookies  " style="float:right">\n              <p>\n                  We use cookies and similar technologies for document\n                  stroage functionality and to measure performance of application features.\n                  You consent to our cookies if you continue to use our website.\n              </p>\n            </div>\n        </div>\n        ';
+			var cookiesButton = document.getElementById('cookiesButton');
+			cookiesButton.onclick = app.hideCookieSheet;
+
+			//Show Tutorial Here -- Aman 
+			//var tutorialCompleted = app.storage.getItem('tutorialCompleted');			
+			//if(tutorialCompleted === "false") {
+			app.doCommand('tutorialOverlay');
+			//}
+			app.storage.setItem('tutorialCompleted', "true");
+		}
+
+		// Some early experiments. seems to work well for desktop Chrome
+		// Safari has noticeable lag, with volume fluctuations.
+		tbe.audio = {
+			shortClick: document.getElementById('short-click'),
+			poof: document.getElementById('poof'),
+			playSound: function playSound(element) {
+				// TODO need means to turn off sounds
+				if (!gIOS /* tbe.components.appSettings.editorSounds() */) {
+						element.play();
+					}
+			}
+		};
+		tbe.audio.shortClick.preload = 'true';
+		tbe.audio.poof.preload = 'true';
+
+		var buttonsPages = [{ 'label': 'A', 'command': 'loadDocA' }, { 'label': 'B', 'command': 'loadDocB' }, { 'label': 'C', 'command': 'loadDocC' }, { 'label': 'D', 'command': 'loadDocD' }, { 'label': 'E', 'command': 'loadDocE' }];
+		var buttonsEdit = [{ 'label': fastr.copy, 'command': 'copy' }, { 'label': fastr.paste, 'command': 'paste' }, { 'label': fastr.trash, 'command': 'trash' }, { 'label': fastr.settings, 'command': 'splashOverlay' }];
+
+		tbe.deleteRay = null;
 
 		// Construct the clipboard
 		var clipboard = new Clipboard('.copy-button', {
@@ -14628,12 +14638,12 @@ module.exports = function () {
 			// Start Blocks
 			{ name: 'identity', group: 'start' }, { name: 'identityAccelerometer', group: 'start' }, { name: 'identityButton', group: 'start' }, { name: 'identityTemperature', group: 'start' },
 			// Function Blocks
-			{ name: 'picture', group: 'fx' }, { name: 'sound', group: 'fx' }, { name: 'motor', group: 'fx' }, { name: 'twoMotor', group: 'fx' }, { name: 'variableSet', group: 'fx' }, { name: 'variableAdd', group: 'fx' }, { name: 'print', group: 'fx' },
+			{ name: 'picture', group: 'action' }, { name: 'sound', group: 'action' }, { name: 'motor', group: 'action' }, { name: 'twoMotor', group: 'action' }, { name: 'variableSet', group: 'action' }, { name: 'variableAdd', group: 'action' }, { name: 'print', group: 'action' },
 			// Control Blocks
 			{ name: 'wait', group: 'control' }, { name: 'loop', group: 'control' }]
 		};
 
-		var actionButtonDefs = [{ 'alignment': 'L', 'label': fastr.play, 'command': 'play', 'tweakx': 4 }, { 'alignment': 'L', 'label': fastr.stop, 'command': 'stop' }, { 'alignment': 'L', 'label': fastr.gamepad, 'command': 'driveOverlay' }, { 'alignment': 'M', 'label': fastr.debug, 'command': 'debugOverlay' }, { 'alignment': 'M', 'label': fastr.file, 'command': 'pages', 'sub': buttonsPages }, { 'alignment': 'M', 'label': fastr.edit, 'command': 'edit', 'sub': buttonsEdit }, { 'alignment': 'M', 'label': fastr.calibrate, 'command': 'calibrate' }, { 'alignment': 'R', 'label': '', 'command': 'deviceScanOverlay' }];
+		var actionButtonDefs = [{ 'alignment': 'L', 'label': fastr.play, 'command': 'play', 'tweakx': 4 }, { 'alignment': 'L', 'label': fastr.stop, 'command': 'stop' }, { 'alignment': 'L', 'label': fastr.gamepad, 'command': 'driveOverlay' }, { 'alignment': 'M', 'label': fastr.debug, 'command': 'debugOverlay' }, { 'alignment': 'M', 'label': fastr.file, 'command': 'pages', 'sub': buttonsPages }, { 'alignment': 'M', 'label': fastr.edit, 'command': 'edit', 'sub': buttonsEdit }, { 'alignment': 'M', 'label': fastr.calibrate, 'command': 'calibrate' }, { 'alignment': 'M', 'label': fastr.tutorial, 'command': 'tutorialOverlay' }, { 'alignment': 'R', 'label': '', 'command': 'deviceScanOverlay' }];
 
 		var base = app.dots.defineButtons(actionButtonDefs, document.getElementById('editorSvgCanvas'));
 		// It seesm SVG eat all the events, even ones that don't hit any objects :(
@@ -14646,7 +14656,7 @@ module.exports = function () {
 
 		var loadedDocText = app.storage.getItem('docA');
 		if (loadedDocText !== null) {
-			app.teaktext.textToBlocks(tbe, loadedDocText);
+			app.tbe.textToBlocks('docA', loadedDocText);
 		}
 
 		// Add the main command buttons, to left, middle and right locations.
@@ -14669,7 +14679,6 @@ module.exports = function () {
 		// Write the current doc state to storage insert
 		// before any command
 		app.tbe.saveCurrentDoc();
-
 		var cmd = app.tbe.commands[commandName];
 		if (app.overlays.isAnimating) {
 			return;
@@ -14701,7 +14710,7 @@ module.exports = function () {
 	return app;
 }();
 
-},{"../buildFlags.js":1,"./block-settings.js":19,"./conductor.js":38,"./defaultFiles.js":40,"./overlays/actionDots.js":43,"./overlays/overlays.js":49,"./teakblocks.js":51,"./teaktext.js":53,"clipboard":8,"fastr.js":56,"knockout":16,"log.js":58}],19:[function(require,module,exports){
+},{"../buildFlags.js":1,"./block-settings.js":19,"./conductor.js":38,"./defaultFiles.js":40,"./overlays/actionDots.js":43,"./overlays/overlays.js":49,"./teakblocks.js":53,"./teaktext.js":55,"clipboard":8,"fastr.js":58,"knockout":16,"log.js":60}],19:[function(require,module,exports){
 'use strict';
 
 /*
@@ -14755,7 +14764,9 @@ module.exports = function () {
 
     for (var i = 0; i < 2; i++) {
       // To process through commonDiv and groupDiv
+      //log.trace(document.getElementsByClassName('block-run')[i]);
       document.getElementsByClassName('block-run')[i].onclick = function () {
+        log.trace('i thing', i);
         conductor.playOne(blockSettings.activeBlock);
       };
       document.getElementsByClassName('block-clone')[i].onclick = blockSettings.cloneGroup;
@@ -14983,6 +14994,16 @@ module.exports = function () {
   blockSettings.onClickTab = function () {
     // Since its DOM event, 'this' will be the button.
     blockSettings.selectActiveTab(this.id);
+
+    // update motor
+    var block = blockSettings.activeBlock;
+    var tabs = document.getElementsByClassName('block-settings-tab');
+    for (var i = 0; i < tabs.length; i++) {
+      if (tabs[i].classList.contains('tab-selected')) {
+        block.controllerSettings.data.motor = tabs[i].textContent;
+      }
+    }
+    block.updateSvg();
   };
 
   blockSettings.selectActiveTab = function (name) {
@@ -15080,7 +15101,7 @@ module.exports = function () {
   return blockSettings;
 }();
 
-},{"./conductor.js":38,"./teakblocks.js":51,"knockout":16}],20:[function(require,module,exports){
+},{"./conductor.js":38,"./teakblocks.js":53,"knockout":16}],20:[function(require,module,exports){
 'use strict';
 
 /*
@@ -15549,7 +15570,7 @@ module.exports = function () {
   return calcpad;
 }();
 
-},{"icons.js":57,"interact.js":15,"knockout":16,"svgbuilder.js":60}],21:[function(require,module,exports){
+},{"icons.js":59,"interact.js":15,"knockout":16,"svgbuilder.js":62}],21:[function(require,module,exports){
 "use strict";
 
 /*
@@ -15742,7 +15763,7 @@ module.exports = function () {
   return { flowBlockHead: flowBlockHead, flowBlockTail: flowBlockTail };
 }();
 
-},{"./keypadTab.js":28,"fastr.js":56,"knockout":16,"svgbuilder.js":60}],23:[function(require,module,exports){
+},{"./keypadTab.js":28,"fastr.js":58,"knockout":16,"svgbuilder.js":62}],23:[function(require,module,exports){
 'use strict';
 
 /*
@@ -15836,7 +15857,7 @@ module.exports = function () {
   return identityAccelerometerBlock;
 }();
 
-},{"./../keypadTab.js":28,"icons.js":57,"knockout":16}],24:[function(require,module,exports){
+},{"./../keypadTab.js":28,"icons.js":59,"knockout":16}],24:[function(require,module,exports){
 'use strict';
 
 /*
@@ -15907,7 +15928,7 @@ module.exports = function () {
   return identityBlock;
 }();
 
-},{"fastr.js":56,"knockout":16,"svgbuilder.js":60}],25:[function(require,module,exports){
+},{"fastr.js":58,"knockout":16,"svgbuilder.js":62}],25:[function(require,module,exports){
 'use strict';
 
 /*
@@ -15989,7 +16010,7 @@ module.exports = function () {
   return identityButtonBlock;
 }();
 
-},{"icons.js":57,"svgbuilder.js":60}],26:[function(require,module,exports){
+},{"icons.js":59,"svgbuilder.js":62}],26:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16112,7 +16133,7 @@ module.exports = function () {
   return identityGyroBlock;
 }();
 
-},{"./../keypadTab.js":28,"knockout":16,"svgbuilder.js":60}],27:[function(require,module,exports){
+},{"./../keypadTab.js":28,"knockout":16,"svgbuilder.js":62}],27:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16217,7 +16238,7 @@ module.exports = function () {
   return identityTemperatureBlock;
 }();
 
-},{"./../keypadTab.js":28,"fastr.js":56,"knockout":16,"svgbuilder.js":60}],28:[function(require,module,exports){
+},{"./../keypadTab.js":28,"fastr.js":58,"knockout":16,"svgbuilder.js":62}],28:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16248,6 +16269,9 @@ module.exports = function () {
   var ko = require('knockout');
   var keypad = {};
 
+  keypad.isBeatsOpen = false;
+  keypad.isNumericOpen = false;
+
   keypad.tabbedButtons = function (div, object) {
     object.inner = '<div id=\'keypadDiv\' class=\'editorDiv\'>\n              <div id="numeric-display" class = "numeric-display-half svg-clear selectedDisplay" width=\'80px\' height=\'80px\' data-bind=\'text: keyPadValue\'>\n              </div>\n              <div id="beats-display" class = "beats-display svg-clear" width=\'80px\' height=\'80px\' data-bind=\'text: beatsValue\'>\n              </div>\n              <svg id="keypadSvg" class=\'area\' width=\'225px\' height=\'200px\' xmlns=\'http://www.w3.org/2000/svg\'></svg>\n              <svg id="beatsSvg" class=\'area\' width=\'225px\' height=\'200px\' xmlns=\'http://www.w3.org/2000/svg\'></svg>\n          </div>';
     keypad.openTabs(div, object); //dataButton
@@ -16261,6 +16285,12 @@ module.exports = function () {
     var beatsDisplay = document.getElementById('beats-display');
     var numericDisplay = document.getElementById('numeric-display');
     beatsDisplay.onclick = function () {
+      if (keypad.isBeatsOpen) {
+        return;
+      }
+      keypad.isBeatsOpen = true;
+      keypad.isNumericOpen = false;
+
       var buttons = document.getElementsByClassName('dataButton');
       beatsDisplay.className += " selectedDisplay";
       numericDisplay.className = "numeric-display-half svg-clear";
@@ -16274,6 +16304,12 @@ module.exports = function () {
     };
 
     numericDisplay.onclick = function () {
+      if (keypad.isNumericOpen) {
+        return;
+      }
+      keypad.isBeatsOpen = false;
+      keypad.isNumericOpen = true;
+
       var buttons = document.getElementsByClassName('beatsButton');
       numericDisplay.className += " selectedDisplay";
       beatsDisplay.className = "beats-display svg-clear";
@@ -16480,12 +16516,14 @@ module.exports = function () {
   };
 
   keypad.closeTabs = function createKeyPad(div) {
+    keypad.isBeatsOpen = false;
+    keypad.isNumericOpen = false;
     ko.cleanNode(div);
   };
   return keypad;
 }();
 
-},{"interact.js":15,"knockout":16,"svgbuilder.js":60}],29:[function(require,module,exports){
+},{"interact.js":15,"knockout":16,"svgbuilder.js":62}],29:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16603,7 +16641,7 @@ module.exports = function () {
   return motorBlock;
 }();
 
-},{"./keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],30:[function(require,module,exports){
+},{"./keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],30:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16740,7 +16778,7 @@ module.exports = function () {
   return pictureBlock;
 }();
 
-},{"icons.js":57,"interact.js":15,"svgbuilder.js":60}],31:[function(require,module,exports){
+},{"icons.js":59,"interact.js":15,"svgbuilder.js":62}],31:[function(require,module,exports){
 'use strict';
 
 /*
@@ -16914,7 +16952,7 @@ module.exports = function () {
 	return printBlock;
 }();
 
-},{"./../variables.js":62,"fastr.js":56,"icons.js":57,"interact.js":15,"knockout":16,"svgbuilder.js":60}],32:[function(require,module,exports){
+},{"./../variables.js":64,"fastr.js":58,"icons.js":59,"interact.js":15,"knockout":16,"svgbuilder.js":62}],32:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17036,7 +17074,7 @@ module.exports = function () {
   return servoBlock;
 }();
 
-},{"./keypadTab.js":28,"knockout":16,"svgbuilder.js":60}],33:[function(require,module,exports){
+},{"./keypadTab.js":28,"knockout":16,"svgbuilder.js":62}],33:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17262,7 +17300,7 @@ module.exports = function () {
   return soundBlock;
 }();
 
-},{"icons.js":57,"interact.js":15,"svgbuilder.js":60}],34:[function(require,module,exports){
+},{"icons.js":59,"interact.js":15,"svgbuilder.js":62}],34:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17359,7 +17397,7 @@ module.exports = function () {
   return twoMotorBlock;
 }();
 
-},{"./keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],35:[function(require,module,exports){
+},{"./keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],35:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17466,7 +17504,7 @@ module.exports = function () {
   return variableAddBlock;
 }();
 
-},{"./../../variables.js":62,"./../keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],36:[function(require,module,exports){
+},{"./../../variables.js":64,"./../keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],36:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17566,7 +17604,7 @@ module.exports = function () {
   return variableSetBlock;
 }();
 
-},{"./../../variables.js":62,"./../calcpad.js":20,"./../keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],37:[function(require,module,exports){
+},{"./../../variables.js":64,"./../calcpad.js":20,"./../keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],37:[function(require,module,exports){
 'use strict';
 
 /*
@@ -17647,24 +17685,26 @@ module.exports = function () {
   return waitBlock;
 }();
 
-},{"./keypadTab.js":28,"icons.js":57,"knockout":16,"svgbuilder.js":60}],38:[function(require,module,exports){
+},{"./keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],38:[function(require,module,exports){
 'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 /* eslint-disable max-depth */
 /* eslint-disable complexity */
 /*
 Copyright (c) 2020 Trashbots - SDG
-
+ 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
+ 
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
+ 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -17674,343 +17714,743 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+var _require = require('./overlays/driveOverlay.js'),
+    exit = _require.exit;
+
 module.exports = function () {
-	var log = require('log.js');
-	var conductor = {};
-	var dso = require('./overlays/deviceScanOverlay.js');
-	var dots = require('./overlays/actionDots.js');
-	var cxn = require('./cxn.js');
-	var variables = require('./variables.js');
+    var log = require('log.js');
+    var conductor = {};
+    var dso = require('./overlays/deviceScanOverlay.js');
+    var dots = require('./overlays/actionDots.js');
+    var cxn = require('./cxn.js');
+    var variables = require('./variables.js');
 
-	conductor.cxn = require('./cxn.js');
-	conductor.tbe = null;
-	conductor.hbTimer = 0;
-	conductor.sensorTimer = 0;
-	conductor.runningBlocks = [];
-	conductor.count = null;
-	conductor.defaultPix = '0000000000';
-	conductor.run = false;
-	conductor.soundCount = 0;
+    conductor.cxn = require('./cxn.js');
+    conductor.tbe = null;
+    conductor.hbTimer = 0;
+    conductor.sensorTimer = 0;
+    conductor.runningBlocks = [];
+    conductor.count = null;
+    conductor.defaultPix = '0000000000';
+    conductor.run = false;
+    conductor.soundCount = 0;
 
-	// Once the conductor system is connected to the editor,
-	// it will ping the target device to determine its current state.
-	// Scan the editor looking for identity blocks
+    //AMAN: Nested for loop additions
+    var nested_loop_counts = [];
+    var nested_loop_blocks = {};
+    var stopped = false;
+    var nest_completed = false;
+    var nest_exists = false;
 
-	conductor.activeBits = [];
+    //AMAN: Battery Additions
+    var first_iteration = true;
 
-	conductor.attachToScoreEditor = function (tbe) {
-		conductor.tbe = tbe;
-		conductor.linkHeartBeat();
-		conductor.cxn.connectionChanged.subscribe(conductor.updateIndentityBlocks);
-	};
+    // Once the conductor system is connected to the editor,
+    // it will ping the target device to determine its current state.
+    // Scan the editor looking for identity blocks
 
-	// If there is a change in connections update the indentity blocks
-	// TODO this linkage is very much a bit of a hack.
-	conductor.updateIndentityBlocks = function () {
-		var blockChainIterator = conductor.tbe.forEachDiagramChain;
-		blockChainIterator(function (chainStart) {
-			if (chainStart.name.startsWith('identity')) {
-				var botName = dso.deviceName;
-				var status = conductor.cxn.connectionStatus(botName);
-				if (status === conductor.cxn.statusEnum.BEACON) {
-					// Try to connect ot it.
-					conductor.cxn.connect(botName);
-				}
-				chainStart.updateSvg();
-			}
-		});
-	};
+    conductor.activeBits = [];
 
-	conductor.linkHeartBeat = function () {
-		var duration = 1000;
-		var botName = dso.deviceName;
-		conductor.hbTimer = 0;
-		conductor.cxn.write(botName, '(m:(1 2) d:0);');
+    conductor.attachToScoreEditor = function (tbe) {
+        conductor.tbe = tbe;
+        conductor.linkHeartBeat();
+        conductor.cxn.connectionChanged.subscribe(conductor.updateIndentityBlocks);
+    };
 
-		// Set all of the blocks to a regular state.
-		conductor.tbe.forEachDiagramBlock(function (b) {
-			b.svgRect.classList.remove('running-block');
-		});
+    // If there is a change in connections update the indentity blocks
+    // TODO this linkage is very much a bit of a hack.
+    conductor.updateIndentityBlocks = function () {
+        log.trace('update identity blocks');
+        var blockChainIterator = conductor.tbe.forEachDiagramChain;
+        blockChainIterator(function (chainStart) {
+            if (chainStart.name.startsWith('identity')) {
+                var botName = dso.deviceName;
+                var status = conductor.cxn.connectionStatus(botName);
+                if (status === conductor.cxn.statusEnum.BEACON) {
+                    // Try to connect ot it.
+                    conductor.cxn.connect(botName);
+                }
+                chainStart.updateSvg();
+            }
+        });
+    };
 
-		if (conductor.runningBlocks.length > 0) {
-			for (var i = 0; i < conductor.runningBlocks.length; i++) {
-				var block = conductor.runningBlocks[i];
-				if (block !== null) {
-					if (conductor.loopCount === undefined && block.isLoopHead()) {
-						conductor.loopCount = block.controllerSettings.data.duration;
-					}
+    conductor.linkHeartBeat = function () {
+        var duration = 1000;
+        var botName = dso.deviceName;
+        conductor.hbTimer = 0;
+        conductor.cxn.write(botName, '(m:(1 2) d:0);');
+        var nested = false;
+        var loop_highlighted = false;
 
-					if (block.name === 'tail' && conductor.loopCount > 1) {
-						block = block.flowHead;
-						conductor.loopCount -= 1;
-					} else if (block.name === 'tail' && conductor.loopCount === 1) {
-						conductor.loopCount = undefined;
-						if (block.next !== null) {
-							block = block.next;
-						} else {
-							conductor.stopAll();
-						}
-					}
+        // Update screen once battery data is received from bot
+        var curr_battery = conductor.cxn.batteryPercent;
+        if (conductor.cxn.batteryPercent !== -1 && first_iteration) {
+            curr_battery = conductor.cxn.batteryPercent;
+            dso.updateScreenName(dso.deviceName);
+            first_iteration = false;
+        }
 
-					if (block !== null && block.name === 'loop') {
-						block = block.next;
-					}
+        // Update screen everytime battery percentage decreases by 100 units
+        else if (conductor.cxn.batteryPercent !== -1 && Math.abs(conductor.cxn.batteryPercent - curr_battery) > 100) {
+                curr_battery = conductor.cxn.batteryPercent;
+                dso.updateScreenName(dso.deviceName);
+            }
 
-					// If this is a new block, get its duration
+        //log.trace('battery percentage:', conductor.cxn.batteryPercent);
 
-					if (block.name === 'print') {
-						var x = conductor.getPrintVal(block.controllerSettings.data); //value
-						duration = (x.toString().length + 1) * 1000; //digits * 1000
-					}
-					if (block.count === null || block.count === undefined) {
-						block.count = block.controllerSettings.data.duration;
+        // Set all of the blocks to a regular state.
+        conductor.tbe.forEachDiagramBlock(function (b) {
+            b.svgRect.classList.remove('running-block');
+        });
 
-						// if (block.name === 'print') {
-						// 	let x = conductor.getPrintVal(block.controllerSettings.data); //value
-						// 	block.count = x.toString().length; //digits
-						// } else {
-						// 	block.count = block.controllerSettings.data.duration;
-						// }
-					}
+        if (dso.deviceName != undefined && dso.batteryLabel != null) {
+            //console.log("YP", dso.deviceName);
+            //dso.updateScreenName();
+        }
 
-					// If it does not have a duration or it has a duration of 0
-					// then set its duration to 1
-					if (block.count === undefined || block.count === '0') {
-						block.count = 1;
-					}
+        if (conductor.runningBlocks.length > 0) {
+            for (var i = 0; i < conductor.runningBlocks.length; i++) {
+                var block = conductor.runningBlocks[i];
+                if (block !== null) {
 
-					if (block !== null) {
-						block.count = parseInt(block.count, 10);
+                    log.trace('Iterate through each block:', block);
 
-						// Mark the current block as running
-						var id = block.first;
-						if (id.name.startsWith('identity')) {
-							block.moveToFront();
-							block.svgRect.classList.add('running-block');
-						}
+                    // ---- LOOP ----  //
 
-						// If the block has not played for its entire duration,
-						// continue playing the block.
-						// Otherwise, get the next block ready and set count to null.
-						conductor.playOne(block);
-						if (block.count > 1) {
-							block.count -= 1;
-						} else {
-							conductor.runningBlocks[i] = block.next;
-							block.count = null;
-						}
-					}
-				}
-			}
-		}
-		// if (block && block.name === 'print') {
-		// 	let x = conductor.getPrintVal(block.controllerSettings.data); //value
-		// 	let digits = x.toString().length;
-		// 	conductor.hbTimer = setTimeout(function() { conductor.linkHeartBeat(); }, digits*1000);
+                    if (conductor.loopCount === undefined && block.isLoopHead()) {
+                        var orig_block = block;
 
-		// 	// conductor.hbTimer = setTimeout(function() { conductor.linkHeartBeat(); }, 3000);
-		// } else {
-		conductor.hbTimer = setTimeout(function () {
-			conductor.linkHeartBeat();
-		}, duration);
-		// }
-	};
+                        log.trace('Block is a Loop');
 
-	// Find all start all blocks and start them running.
-	conductor.playAll = function () {
-		dots.activate('play', 5);
-		conductor.runningBlocks = [];
-		conductor.run = true;
-		variables.resetVars();
-		var blockChainIterator = conductor.tbe.forEachDiagramChain;
-		blockChainIterator(function (chainStart) {
-			// Ignore chains that don't start with an identity block.
-			if (chainStart.name === 'identity') {
-				conductor.runningBlocks.push(chainStart.next);
-			} else if (chainStart.name === 'identityAccelerometer' || chainStart.name === 'identityButton' || chainStart.name === 'identityTemperature') {
-				//chainStart.controllerSettings.data.run = "yes";
-				cxn.buttonA = null;
-				cxn.buttonB = null;
-				cxn.buttonAB = null;
-				conductor.checkSensorIdentity(chainStart);
-			}
-		});
-	};
+                        if (!nest_completed) {
+                            // Update loops count array
+                            for (var a in nested_loop_blocks) {
+                                //don't want the innermost loop to be included in this condition unless theres only one loop
+                                if (nested_loop_counts.length === 1 || nested_loop_blocks[a] === block && a != nested_loop_counts.length - 1) {
+                                    --nested_loop_counts[a];
 
-	conductor.satisfiesStart = function (val, block, error) {
-		var blockValue = parseInt(block.controllerSettings.data.value, 10);
-		if (block.controllerSettings.data.comparison === '<') {
-			return val < blockValue;
-		} else if (block.controllerSettings.data.comparison === '>') {
-			return val > blockValue;
-		} else if (block.controllerSettings.data.comparison === '=') {
-			if (val === blockValue) {
-				return true;
-			} else if (val + error > blockValue && val - error < blockValue) {
-				return true;
-			}
-			return false;
-		}
-		return null;
-	};
+                                    for (var b in nested_loop_counts) {
+                                        while (nested_loop_counts[b] === 0 && b != 0 && b != nested_loop_counts.length - 2) {
+                                            --nested_loop_counts[b - 1];
+                                            nested_loop_counts[b] = parseInt(nested_loop_blocks[a].controllerSettings.data.duration) + 1;
+                                            b = b - 1;
+                                        }
+                                    }
 
-	conductor.runningBlockIsNotInChain = function (block) {
-		while (block !== null) {
-			if (block.svgRect.classList.contains('running-block')) {
-				return false;
-			}
-			block = block.next;
-		}
-		return true;
-	};
+                                    //if the count that was decremented was for the outermost loop, reset all inner loops to one more than their their original counts
+                                    if (parseInt(a) === 0) {
+                                        for (var a = 1; a < nested_loop_counts.length; ++a) {
+                                            nested_loop_counts[a] = parseInt(nested_loop_blocks[a].controllerSettings.data.duration) + 1;
+                                        }
 
-	conductor.checkSensorIdentity = function (block) {
-		conductor.sensorTimer = 0;
-		var data = block.controllerSettings.data;
-		//conductor.cxn.write(dso.deviceName, '(sensor);');
-		if (conductor.run) {
-			if (block.name === 'identityAccelerometer' && cxn.accelerometer !== null) {
-				var accel = cxn.accelerometer;
-				console.log("Accelerometer", accel);
-				if (conductor.satisfiesStart(accel, block, 5) && conductor.runningBlockIsNotInChain(block)) {
-					conductor.runningBlocks.push(block.next);
-				}
-			} else if (block.name === 'identityTemperature' && cxn.temperature !== null) {
-				var temp = cxn.temperature;
-				console.log("Temperature", temp);
-				if (conductor.satisfiesStart(temp, block, 0)) {
-					conductor.runningBlocks.push(block.next);
-				}
-			} else if (block.name === 'identityButton') {
-				//console.log(data.button);
-				if (data.button === 'A' && cxn.buttonA) {
-					conductor.runningBlocks.push(block.next);
-					cxn.buttonA = null;
-				} else if (data.button === 'B' && cxn.buttonB) {
-					conductor.runningBlocks.push(block.next);
-					cxn.buttonB = null;
-				} else if (data.button === 'A+B' && cxn.buttonAB) {
-					conductor.runningBlocks.push(block.next);
-					cxn.buttonAB = null;
-				}
-			}
-		}
-		conductor.sensorTimer = setTimeout(function () {
-			conductor.checkSensorIdentity(block);
-		}, 50);
-	};
+                                        log.trace('count for outermost loop was decremented, inner loops have been reset');
+                                    }
 
-	// Stop all running chains.
-	conductor.stopAll = function () {
-		dots.activate('play', 0);
-		var blockChainIterator = conductor.tbe.forEachDiagramChain;
-		var botName = '';
-		var message = '(m:(1 2) d:0);';
-		var message2 = '(px:' + conductor.defaultPix + ');';
-		conductor.run = false;
-		blockChainIterator(function (chainStart) {
-			chainStart.svgRect.classList.remove('running-block');
-			// Ignore chains that don't start with an identity block.
-			if (chainStart.name.startsWith('identity')) {
-				botName = dso.deviceName;
-				conductor.cxn.write(botName, message);
-				conductor.cxn.write(botName, message2);
-			}
-		});
-		conductor.count = null;
-		conductor.runningBlocks = [];
-		conductor.soundCount = 0;
-		log.trace('stop all');
-		// Single step, find target and head of chain, and run the single block.
-	};
+                                    //condition is true if the count of the current loop block is 0 and the current loop block isn't the outermost loop
+                                    var condition = nested_loop_counts[a] === 0 && a !== 0;
 
-	conductor.playOne = function (block) {
-		var first = block.first;
+                                    if (condition && block.flowTail.next !== null && block.flowTail.next.name !== 'tail' && nested_loop_counts[0] != 0) {
+                                        block = block.flowTail.next;
+                                        conductor.runningBlocks[i] = block;
+                                        log.trace('Case to avoid playing loop block #1', block);
 
-		if (first.name.startsWith('identity')) {
-			var botName = dso.deviceName;
-			var message = '';
-			var d = block.controllerSettings.data;
-			if (block.name === 'picture') {
-				var imageData = d.pix;
-				var pixStr = conductor.packPix(imageData);
-				message = '(px:' + pixStr + ':' + 1 + ');';
-			} else if (block.name === 'servo') {
-				message = '(sr:' + 50 + ');';
-			} else if (block.name === 'motor') {
-				message = '(m:' + d.motor + ' d:' + -d.speed + ' b:' + d.duration + ');';
-			} else if (block.name === 'twoMotor') {
-				message = '(m:(1 2) d:' + -d.speed + ');'; // +' b:' + d.duration
-			} else if (block.name === 'sound') {
-				// pass the Solfege index
-				message = '(nt:' + d.s.split(" ")[conductor.soundCount] + ');';
-				if (conductor.soundCount === d.duration - 1) {
-					conductor.soundCount = 0;
-				} else {
-					conductor.soundCount += 1;
-				}
-				console.log('message', message);
-			} else if (block.name === 'wait') {
-				message = '';
-			} else if (block.name === 'variableSet') {
-				variables.set(d.variable, d.value);
-			} else if (block.name === 'variableAdd') {
-				// Decrement is done with negative numbers.
-				variables.func(d.variable, '+', d.value);
-			} else if (block.name === 'print') {
-				var val = conductor.getPrintVal(d);
-				message = '(pr:' + val + ');';
-			}
-			conductor.cxn.write(botName, message);
-		}
-		// variables.printVars();
-		// Single step, find target and head of chain and run the single block.
-	};
+                                        //-------Play block--------//
+                                        if (block.name === 'loop') {
+                                            --nested_loop_counts[parseInt(a) + 1];
+                                            log.trace('the block after tail is loop', nested_loop_counts);
+                                            block.count = 1;
 
-	conductor.getPrintVal = function (d) {
-		var val = 0;
-		if (d.print === 'var') {
-			console.log('var------');
-			val = variables.get(d.variable);
-		} else if (d.print === 'sensor') {
-			console.log('sensor------');
-			if (d.sensor === 'accelerometer') {
-				val = cxn.accelerometer;
-			} else if (d.sensor === 'temperature') {
-				val = cxn.temperature;
-			}
-		}
-		console.log('conductor print', d.print, d.variable, d.sensor, val);
-		return Math.trunc(val); //truncated to an integer
-	};
+                                            if (block.first.name.startsWith('identity')) {
+                                                block.moveToFront();
+                                                block.svgRect.classList.add('running-block');
+                                            }
 
-	conductor.playSingleChain = function () {
-		log.trace('play single chain');
-		// The conductor starts one chain (part of the score).
-	};
+                                            conductor.playOne(block);
 
-	conductor.packPix = function (imageData) {
-		var pixStr = '';
-		for (var i = 0; i < 5; i++) {
-			var value = 0;
-			for (var j = 0; j < 5; j++) {
-				value *= 2;
-				if (imageData[i * 5 + j] !== 0) {
-					value += 1;
-				}
-			}
-			var str = value.toString(16);
-			if (str.length === 1) {
-				str = '0' + str;
-			}
-			pixStr += str;
-		}
-		return pixStr;
-	};
-	return conductor;
+                                            while (block.count > 1) {
+                                                conductor.playOne(block);
+                                                --block.count;
+                                            }
+
+                                            block.count = null;
+                                            loop_highlighted = true;
+                                        }
+
+                                        //------Reset all other loop counts----//
+                                        while (nested_loop_counts[a] === 0 && a != 0) {
+                                            nested_loop_counts[a] = parseInt(nested_loop_blocks[a].controllerSettings.data.duration) + 1;
+                                            a = a - 1;
+                                        }
+                                    } else {
+                                        if (condition && nested_loop_counts[0] != 0) {
+                                            block = block.flowTail.next;
+                                            conductor.runningBlocks[i] = block;
+                                            nested = true;
+                                            log.trace('chosen block due to condition', block);
+
+                                            //----------Play block--------------//
+                                            if (block.name === 'loop' || block.name === 'tail') {
+                                                block.count = 1;
+                                            } else {
+                                                block.count = block.controllerSettings.data.duration;
+                                            }
+
+                                            if (block.first.name.startsWith('identity')) {
+                                                block.moveToFront();
+                                                block.svgRect.classList.add('running-block');
+                                            }
+
+                                            while (block.count > 1) {
+                                                conductor.playOne(block);
+                                                --block.count;
+                                            }
+
+                                            block.count = null;
+                                            loop_highlighted = true;
+                                        }
+                                    }
+
+                                    log.trace('2a i. Nested loop counts array updated', nested_loop_counts);
+                                    break;
+                                }
+                            }
+                        }
+
+                        // ----- PLAYING BLOCK ----- //
+
+                        if (nested_loop_counts[0] > 0 && block.name === 'loop' && !block.svgRect.classList.contains('running-block')) {
+                            log.trace('PLAYING LOOP BLOCK', orig_block);
+
+                            //Play block
+                            orig_block.count = 1;
+
+                            if (orig_block.first.name.startsWith('identity')) {
+                                orig_block.moveToFront();
+                                orig_block.svgRect.classList.add('running-block');
+                            }
+
+                            orig_block.count = null;
+                            loop_highlighted = true;
+                        } else if (nested_loop_counts[0] === 0) {
+                            //If block is the outermmost loop
+                            if (block === nested_loop_blocks[0]) {
+                                //Play block
+                                orig_block = nested_loop_blocks[0].flowTail;
+
+                                //if orig_block was already played then it shouldn't be played again
+                                if (!orig_block.svgRect.classList.contains('running-block')) {
+                                    log.trace('PLAYING TAIL OF OUTERMOST LOOP', orig_block);
+
+                                    orig_block.count = 1;
+
+                                    if (orig_block.first.name.startsWith('identity')) {
+                                        orig_block.moveToFront();
+                                        orig_block.svgRect.classList.add('running-block');
+                                    }
+
+                                    orig_block.count = null;
+                                    loop_highlighted = true;
+                                }
+                            } else {
+                                block = block.flowTail.next;
+                                conductor.runningBlocks[i] = block;
+                                log.trace('tail reached, here where we at', block);
+                            }
+                        }
+
+                        // ------- LOOP FUNCTIONALITY ----- //
+
+
+                        if (block.name === 'loop') {
+                            //If end of nested loop, set block to after tail of outermost loop
+                            if (nested_loop_counts[0] <= 0 && nest_exists) {
+                                log.trace('2a ii. Outermost loop is at 0.');
+                                nest_completed = true;
+                                nested = true;
+                                block = nested_loop_blocks[0].flowTail.next;
+                                conductor.helper(block);
+                                conductor.runningBlocks[i] = block;
+                            }
+
+                            //end of non nested loop
+                            else if (nested_loop_counts[0] === 0 && !nest_exists) {
+                                    conductor.helper(block);
+                                    nested = true;
+                                }
+
+                                // if block is the inner most loop
+                                else if (Object.values(nested_loop_blocks)[Object.keys(nested_loop_blocks).length - 1] === block) {
+                                        log.trace('2a iii. Loop block is the innermost loop', block);
+                                        conductor.loopCount = block.controllerSettings.data.duration;
+                                        --nested_loop_counts[nested_loop_counts.length - 1];
+                                        log.trace('loopCount set', conductor.loopCount, _typeof(conductor.loopCount));
+                                    }
+
+                                    //run next block (which isn't a loop)
+                                    else if (block.next.name !== 'loop') {
+                                            block = block.next;
+                                            conductor.runningBlocks[i] = block;
+                                            log.trace('Moving on to next block', block);
+                                        }
+
+                                        //run next block (which is a loop)
+                                        else {
+                                                block = block.next;
+                                                conductor.runningBlocks[i] = block;
+                                                log.trace('nested for loops, the chosen loop is:', block);
+                                                nested = true;
+                                            }
+                        }
+                    }
+
+                    // --------------------TAIL-----------------//
+
+                    if (block !== null) {
+                        //Only play tail if it's the last iteration
+                        if (block.name === 'tail' && (conductor.loopCount == 1 || conductor.loopCount === undefined)) {
+                            log.trace("PLAYING TAIL", block, nest_exists);
+                            //Play block
+                            block.count = 1;
+
+                            if (block.first.name.startsWith('identity')) {
+                                block.moveToFront();
+                                block.svgRect.classList.add('running-block');
+                            }
+
+                            block.count = null;
+                            loop_highlighted = true;
+                        }
+
+                        //tail - block - tail
+                        if (block.name === 'tail' && conductor.loopCount === undefined && nest_exists) {
+                            log.trace('TAIL: tail-block-tail');
+                            var temp_count = -1;
+                            for (var a in nested_loop_blocks) {
+                                if (nested_loop_blocks[a] === block.flowHead) {
+                                    temp_count = nested_loop_counts[a];
+                                }
+                            }
+
+                            if (temp_count == 1) {
+                                if (block.name === 'tail' && block.flowHead === nested_loop_blocks[0]) {
+                                    nest_completed = true;
+                                    nest_exists = false;
+                                    conductor.helper(block.next);
+                                    block = block.next; //on purpose
+                                    conductor.runningBlocks[i] = block;
+                                    nested = true;
+                                } else {
+                                    block = block.next; //on purpose
+                                    conductor.runningBlocks[i] = block;
+                                    nested = true;
+                                }
+                            } else {
+                                block = block.flowHead;
+                                for (var x in nested_loop_counts) {
+                                    if (nested_loop_blocks[x] === block) {
+                                        ++x;
+                                        while (x !== nested_loop_counts.length - 1) {
+                                            nested_loop_counts[x] = parseInt(nested_loop_blocks[x].controllerSettings.data.duration) + 1;
+                                            ++x;
+                                        }
+                                        break;
+                                    }
+                                }
+
+                                log.trace('nested loop counts be updated out here', nested_loop_counts);
+                                conductor.runningBlocks[i] = block;
+                                log.trace('tail of outer loop arrived, block is now:', block);
+                                nested = true;
+                            }
+                        }
+
+                        //tail reached and loopCount > 1
+                        else if (block.name === 'tail' && conductor.loopCount > 1) {
+                                log.trace('TAIL: loopcount > 1');
+                                conductor.loopCount -= 1;
+                                log.trace('reached the tail, decreasing loopcount:', conductor.loopCount);
+                                block = block.flowHead;
+                                conductor.runningBlocks[i] = block;
+                                log.trace('block reset back to head of for loop', block);
+
+                                //update nested_loop_blocks
+                                for (var a in nested_loop_blocks) {
+                                    if (nested_loop_blocks[a] === block) {
+                                        --nested_loop_counts[a];
+                                        log.trace('Nested loop counts INNER LOOP updated', nested_loop_counts);
+                                        break;
+                                    }
+                                }
+                            } else if (block.name === 'tail' && conductor.loopCount == 1) {
+                                log.trace('TAIL: loopcount == 1', nest_exists);
+                                conductor.loopCount = undefined;
+                                if (block.next !== null) {
+                                    block = block.next;
+
+                                    if (block.name === 'loop') {
+                                        log.trace('BACK TO BACK FOR LOOPS');
+                                        conductor.helper(block);
+                                        conductor.runningBlocks[i] = block;
+                                        log.trace('next loop count:', conductor.loopCount);
+                                        nested = true;
+                                    } else if (block.name === 'tail') {
+                                        conductor.runningBlocks[i] = block;
+                                        conductor.loopCount = undefined;
+                                        log.trace('tail of inner loop arrived, block is now:', block);
+                                        nested = true;
+                                    }
+
+                                    //If block.name isn't loop or tail, must be a normal block
+                                    else {
+                                            for (var a in nested_loop_blocks) {
+                                                if (nested_loop_blocks[a] === block.prev.flowHead) {
+                                                    nested_loop_counts[a] = block.prev.flowHead.controllerSettings.data.duration;
+                                                    log.trace('Nested loop counts INNER LOOP reset bc tail-block:', nested_loop_counts);
+                                                    break;
+                                                }
+                                            }
+
+                                            if (nested_loop_counts.length === 1) {
+                                                conductor.helper(block);
+                                            }
+
+                                            conductor.runningBlocks[i] = block;
+                                        }
+                                } else {
+                                    conductor.stopAll();
+                                }
+                            }
+                    }
+
+                    //----------Executing Single Block---------------//
+
+                    if (!nested && !loop_highlighted) {
+                        log.trace('executing single block', block);
+
+                        if (block !== null && block.name === 'loop') {
+                            block = block.next;
+                        }
+
+                        // If this is a new block, get its duration
+
+                        if (block.name === 'print') {
+                            var _x = conductor.getPrintVal(block.controllerSettings.data); //value
+                            duration = (_x.toString().length + 1) * 1000; //digits * 1000
+                        }
+                        if (block.count === null || block.count === undefined || stopped) {
+                            block.count = block.controllerSettings.data.duration;
+                            stopped = false;
+                            // if (block.name === 'print') {
+                            //  let x = conductor.getPrintVal(block.controllerSettings.data); //value
+                            //  block.count = x.toString().length; //digits
+                            // } else {
+                            //  block.count = block.controllerSettings.data.duration;
+                            // }
+                        }
+
+                        // If it does not have a duration or it has a duration of 0
+                        // then set its duration to 1
+                        if (block.count === undefined || block.count === '0') {
+                            block.count = 1;
+                        }
+
+                        if (block !== null) {
+                            block.count = parseInt(block.count, 10);
+
+                            // Mark the current block as running
+                            var id = block.first;
+                            if (id.name.startsWith('identity')) {
+                                block.moveToFront();
+                                block.svgRect.classList.add('running-block');
+                            }
+
+                            // If the block has not played for its entire duration,
+                            // continue playing the block.
+                            // Otherwise, get the next block ready and set count to null.
+                            conductor.playOne(block);
+                            if (block.count > 1) {
+                                block.count -= 1;
+                            } else {
+                                conductor.runningBlocks[i] = block.next;
+                                block.count = null;
+                            }
+                        }
+                    }
+
+                    nested = false;
+                }
+            }
+        }
+        // if (block && block.name === 'print') {
+        //  let x = conductor.getPrintVal(block.controllerSettings.data); //value
+        //  let digits = x.toString().length;
+        //  conductor.hbTimer = setTimeout(function() { conductor.linkHeartBeat(); }, digits*1000);
+
+        //  // conductor.hbTimer = setTimeout(function() { conductor.linkHeartBeat(); }, 3000);
+        // } else {
+        conductor.hbTimer = setTimeout(function () {
+            conductor.linkHeartBeat();
+        }, duration);
+        // }
+    };
+
+    //Helper function to intialize count and block arrays for loop related functionality
+    conductor.helper = function (block) {
+        nested_loop_counts = [];
+        nested_loop_blocks = [];
+        var loop_exists = false;
+
+        //find 'nearest' loop to block
+        while (block !== null) {
+            if (block.name === 'loop') {
+                loop_exists = true;
+                break;
+            }
+            block = block.next;
+        }
+
+        if (loop_exists) {
+            var j = 0;
+            nested_loop_counts[j] = block.controllerSettings.data.duration;
+            nested_loop_blocks[j] = block;
+            var block_tail = block.flowTail;
+            block = block.next;
+            while (block !== block_tail) {
+                if (block.name === 'loop') {
+                    ++j;
+                    nested_loop_counts[j] = block.controllerSettings.data.duration;
+                    nested_loop_blocks[j] = block;
+                }
+                block = block.next;
+            }
+
+            //increment each value in loop counts so its one more than loop val.
+            for (var x = 0; x < nested_loop_counts.length; ++x) {
+                ++nested_loop_counts[x];
+            }
+
+            log.trace('1a. Nested for loop array initiated:', nested_loop_counts);
+            log.trace('1b. Nested for loop array #2 initiated:', nested_loop_blocks);
+            nest_completed = false;
+            nest_exists = nested_loop_counts.length > 1;
+        } else {
+            nest_exists = false;
+            nest_completed = false;
+        }
+    };
+
+    // Find all start all blocks and start them running.
+    conductor.playAll = function () {
+        nest_exists = false;
+        dots.activate('play', 5);
+        conductor.runningBlocks = [];
+        conductor.run = true;
+        variables.resetVars();
+        var blockChainIterator = conductor.tbe.forEachDiagramChain;
+        blockChainIterator(function (chainStart) {
+            // Ignore chains that don't start with an identity block.
+            if (chainStart.name === 'identity') {
+                conductor.runningBlocks.push(chainStart.next);
+                var block = chainStart.next;
+                conductor.helper(block);
+            } else if (chainStart.name === 'identityAccelerometer' || chainStart.name === 'identityButton' || chainStart.name === 'identityTemperature') {
+                //chainStart.controllerSettings.data.run = "yes";
+                cxn.buttonA = null;
+                cxn.buttonB = null;
+                cxn.buttonAB = null;
+                conductor.checkSensorIdentity(chainStart);
+            }
+        });
+    };
+
+    conductor.satisfiesStart = function (val, block, error) {
+        var blockValue = parseInt(block.controllerSettings.data.value, 10);
+        if (block.controllerSettings.data.comparison === '<') {
+            return val < blockValue;
+        } else if (block.controllerSettings.data.comparison === '>') {
+            return val > blockValue;
+        } else if (block.controllerSettings.data.comparison === '=') {
+            if (val === blockValue) {
+                return true;
+            } else if (val + error > blockValue && val - error < blockValue) {
+                return true;
+            }
+            return false;
+        }
+        return null;
+    };
+
+    conductor.runningBlockIsNotInChain = function (block) {
+        while (block !== null) {
+            if (block.svgRect.classList.contains('running-block')) {
+                return false;
+            }
+            block = block.next;
+        }
+        return true;
+    };
+
+    conductor.checkSensorIdentity = function (block) {
+        conductor.sensorTimer = 0;
+        var data = block.controllerSettings.data;
+        //conductor.cxn.write(dso.deviceName, '(sensor);');
+        if (conductor.run) {
+            if (block.name === 'identityAccelerometer' && cxn.accelerometer !== null) {
+                var accel = cxn.accelerometer;
+                console.log("Accelerometer", accel);
+                if (conductor.satisfiesStart(accel, block, 5) && conductor.runningBlockIsNotInChain(block)) {
+                    conductor.runningBlocks.push(block.next);
+                }
+            } else if (block.name === 'identityTemperature' && cxn.temperature !== null) {
+                var temp = cxn.temperature;
+                console.log("Temperature", temp);
+                if (conductor.satisfiesStart(temp, block, 0)) {
+                    conductor.runningBlocks.push(block.next);
+                }
+            } else if (block.name === 'identityButton') {
+                //console.log(data.button);
+                if (data.button === 'A' && cxn.buttonA) {
+                    conductor.runningBlocks.push(block.next);
+                    cxn.buttonA = null;
+                } else if (data.button === 'B' && cxn.buttonB) {
+                    conductor.runningBlocks.push(block.next);
+                    cxn.buttonB = null;
+                } else if (data.button === 'A+B' && cxn.buttonAB) {
+                    conductor.runningBlocks.push(block.next);
+                    cxn.buttonAB = null;
+                }
+            }
+        }
+        conductor.sensorTimer = setTimeout(function () {
+            conductor.checkSensorIdentity(block);
+        }, 50);
+    };
+
+    // Stop all running chains.
+    conductor.stopAll = function () {
+        //AMAN loop additions
+        nested_loop_counts = [];
+        nested_loop_blocks = {};
+        stopped = false;
+        nest_completed = false;
+        nest_exists = false;
+
+        dots.activate('play', 0);
+        var blockChainIterator = conductor.tbe.forEachDiagramChain;
+        var botName = '';
+        var message = '(m:(1 2) d:0);';
+        var message2 = '(px:' + conductor.defaultPix + ');';
+        conductor.run = false;
+        blockChainIterator(function (chainStart) {
+            chainStart.svgRect.classList.remove('running-block');
+            // Ignore chains that don't start with an identity block.
+            if (chainStart.name.startsWith('identity')) {
+                botName = dso.deviceName;
+                conductor.cxn.write(botName, message);
+                conductor.cxn.write(botName, message2);
+            }
+        });
+        conductor.count = null;
+        conductor.loopCount = undefined;
+        conductor.runningBlocks = [];
+        conductor.soundCount = 0;
+        //block.count = null;
+        stopped = true;
+        log.trace('stop all');
+        // Single step, find target and head of chain, and run the single block.
+    };
+
+    conductor.playOne = function (block) {
+        var first = block.first;
+
+        if (first.name.startsWith('identity')) {
+            var botName = dso.deviceName;
+            var message = '';
+            var d = block.controllerSettings.data;
+            if (block.name === 'picture') {
+                var imageData = d.pix;
+                var pixStr = conductor.packPix(imageData);
+                message = '(px:' + pixStr + ':' + 1 + ');';
+            } else if (block.name === 'servo') {
+                message = '(sr:' + 50 + ');';
+            } else if (block.name === 'motor') {
+                message = '(m:' + d.motor + ' d:' + -d.speed + ' b:' + d.duration + ');';
+            } else if (block.name === 'twoMotor') {
+                message = '(m:(1 2) d:' + -d.speed + ');'; // +' b:' + d.duration
+            } else if (block.name === 'sound') {
+                //log.trace('11: sound');
+                // pass the Solfege index
+                message = '(nt:' + d.s.split(" ")[conductor.soundCount] + ');';
+                if (conductor.soundCount === d.duration - 1) {
+                    conductor.soundCount = 0;
+                } else {
+                    conductor.soundCount += 1;
+                }
+                //console.log('message', message);
+            } else if (block.name === 'wait') {
+                message = '';
+            } else if (block.name === 'variableSet') {
+                variables.set(d.variable, d.value);
+            } else if (block.name === 'variableAdd') {
+                // Decrement is done with negative numbers.
+                variables.func(d.variable, '+', d.value);
+            } else if (block.name === 'print') {
+                var val = conductor.getPrintVal(d);
+                message = '(pr:' + val + ');';
+            }
+
+            //log.trace('message:',message);
+            conductor.cxn.write(botName, message);
+        }
+        // variables.printVars();
+        // Single step, find target and head of chain and run the single block.
+    };
+
+    conductor.getPrintVal = function (d) {
+        var val = 0;
+        if (d.print === 'var') {
+            //console.log('var------');
+            val = variables.get(d.variable);
+        } else if (d.print === 'sensor') {
+            console.log('sensor------');
+            if (d.sensor === 'accelerometer') {
+                val = cxn.accelerometer;
+            } else if (d.sensor === 'temperature') {
+                val = cxn.temperature;
+            }
+        }
+        //console.log('conductor print', d.print, d.variable, d.sensor, val);
+        return Math.trunc(val); //truncated to an integer
+    };
+
+    conductor.playSingleChain = function () {
+        log.trace('play single chain');
+        // The conductor starts one chain (part of the score).
+    };
+
+    conductor.packPix = function (imageData) {
+        var pixStr = '';
+        for (var i = 0; i < 5; i++) {
+            var value = 0;
+            for (var j = 0; j < 5; j++) {
+                value *= 2;
+                if (imageData[i * 5 + j] !== 0) {
+                    value += 1;
+                }
+            }
+            var str = value.toString(16);
+            if (str.length === 1) {
+                str = '0' + str;
+            }
+            pixStr += str;
+        }
+        return pixStr;
+    };
+    return conductor;
 }();
 
-},{"./cxn.js":39,"./overlays/actionDots.js":43,"./overlays/deviceScanOverlay.js":46,"./variables.js":62,"log.js":58}],39:[function(require,module,exports){
+},{"./cxn.js":39,"./overlays/actionDots.js":43,"./overlays/deviceScanOverlay.js":46,"./overlays/driveOverlay.js":47,"./variables.js":64,"log.js":60}],39:[function(require,module,exports){
 'use strict';
 
 /*
@@ -18056,7 +18496,7 @@ module.exports = function factory() {
 	cxn.buttonA = null;
 	cxn.buttonB = null;
 	cxn.buttonAB = null;
-	cxn.batteryPercent = 50;
+	cxn.batteryPercent = -1;
 	// State enumeration for conections.
 	cxn.statusEnum = {
 		NOT_THERE: 0,
@@ -18318,6 +18758,7 @@ module.exports = function factory() {
 
 	cxn.onDisconnecWebBLE = function (event) {
 		log.trace('onDisconnecWebBLE:', event.target.name);
+
 		var botName = cxn.bleNameToBotName(event.target.name);
 		cxn.setConnectionStatus(botName, cxn.statusEnum.NOT_THERE);
 		cxn.cullList();
@@ -18349,6 +18790,17 @@ module.exports = function factory() {
 		cxn.connectionChanged(cxn.devices);
 	};
 
+	cxn.writeDisconnect = function () {
+		console.log("WRITING DC", cxn.botName);
+		cxn.write(cxn.botName, '(dc)');
+		var count = 0;
+		var intervalID = setInterval(function () {
+			if (++count === 20) {
+				window.clearInterval(intervalID);
+			}
+		}, 50);
+	};
+
 	cxn.disconnectAll = function () {
 		if (cxn.appBLE) {
 			for (var deviceName in cxn.devices) {
@@ -18360,12 +18812,16 @@ module.exports = function factory() {
 		} else {
 			// More to do here once multiple connectios allowed.
 			if (cxn.webBLEWrite !== null) {
-				var dev = cxn.webBLEWrite.service.device;
-				if (dev.gatt.connected) {
-					dev.gatt.disconnect();
-				}
-				cxn.webBLEWrite = null;
-				cxn.webBLERead = null;
+				cxn.writeDisconnect();
+				setTimeout(function () {
+					var dev = cxn.webBLEWrite.service.device;
+					console.log("here", cxn.botName, cxn.webBLEWrite, cxn.webBLERead);
+					if (dev.gatt.connected) {
+						dev.gatt.disconnect();
+					}
+					cxn.webBLEWrite = null;
+					cxn.webBLERead = null;
+				}, 1000);
 			}
 		}
 	};
@@ -18440,12 +18896,13 @@ module.exports = function factory() {
 				cxn.temperature = fData;
 			} else if (str.includes('vs')) {
 				cxn.versionNumber = str.substring(4, str.length - 1);
-				console.log('version number:', cxn.versionNumber);
+				//console.log('version number:', cxn.versionNumber);
 				if (cxn.botName) {
-					cxn.write(cxn.botName, '(vr)');
+					//cxn.write(cxn.botName, '(vr)');
 				}
 			} else if (str.includes('bt')) {
 				cxn.batteryPercent = str.substring(4, str.length - 1);
+				//log.trace('cxn battery percent:', cxn.batteryPercent);
 			} else if (str.includes('cs')) {
 				cxn.calibrating = true;
 			} else if (str.includes('cf')) {
@@ -18468,6 +18925,13 @@ module.exports = function factory() {
 	};
 
 	cxn.write = function (name, message) {
+		cxn.writeHelper(name, message, 0);
+	};
+
+	cxn.writeHelper = function (name, message, retryCount) {
+		if (retryCount >= 500) {
+			return;
+		}
 		if (!cxn.calibrating) {
 			//console.log(cxn.calibrating);
 			try {
@@ -18484,10 +18948,10 @@ module.exports = function factory() {
 						if (cxn.webBLEWrite) {
 							cxn.webBLEWrite.writeValue(buffer).then(function () {
 
-								//log.trace('write succeded', message);
+								//log.trace('write succeeded', message);
 							}).catch(function () {
-								//log.trace('write failed', message, error);
-								setTimeout(cxn.write(name, message), 50);
+								//log.trace('write failed', message);
+								setTimeout(cxn.writeHelper(name, message, retryCount + 1), 50);
 							});
 						}
 						//var cxn.webBLEWrite = null;
@@ -18509,7 +18973,7 @@ module.exports = function factory() {
 	return cxn;
 }();
 
-},{"knockout":16,"log.js":58}],40:[function(require,module,exports){
+},{"knockout":16,"log.js":60}],40:[function(require,module,exports){
 'use strict';
 
 /*
@@ -18687,7 +19151,7 @@ module.exports = function () {
   return b;
 }();
 
-},{"./blocks/colorStripBlock.js":21,"./blocks/flowBlocks.js":22,"./blocks/identityBlocks/identityAccelerometerBlock.js":23,"./blocks/identityBlocks/identityBlock.js":24,"./blocks/identityBlocks/identityButtonBlock.js":25,"./blocks/identityBlocks/identityGyroBlock.js":26,"./blocks/identityBlocks/identityTemperatureBlock.js":27,"./blocks/motorBlock.js":29,"./blocks/pictureBlock.js":30,"./blocks/printBlock.js":31,"./blocks/servoBlock.js":32,"./blocks/soundBlock.js":33,"./blocks/twoMotorBlock.js":34,"./blocks/variables/variableAddBlock.js":35,"./blocks/variables/variableSetBlock.js":36,"./blocks/waitBlock.js":37,"log.js":58,"svgbuilder.js":60}],42:[function(require,module,exports){
+},{"./blocks/colorStripBlock.js":21,"./blocks/flowBlocks.js":22,"./blocks/identityBlocks/identityAccelerometerBlock.js":23,"./blocks/identityBlocks/identityBlock.js":24,"./blocks/identityBlocks/identityButtonBlock.js":25,"./blocks/identityBlocks/identityGyroBlock.js":26,"./blocks/identityBlocks/identityTemperatureBlock.js":27,"./blocks/motorBlock.js":29,"./blocks/pictureBlock.js":30,"./blocks/printBlock.js":31,"./blocks/servoBlock.js":32,"./blocks/soundBlock.js":33,"./blocks/twoMotorBlock.js":34,"./blocks/variables/variableAddBlock.js":35,"./blocks/variables/variableSetBlock.js":36,"./blocks/waitBlock.js":37,"log.js":60,"svgbuilder.js":62}],42:[function(require,module,exports){
 'use strict';
 
 /*
@@ -18720,7 +19184,6 @@ var app = require('./appMain.js');
 app.isRegularBrowser = document.URL.indexOf('http://') >= 0 || document.URL.indexOf('https://') >= -0;
 
 if (!app.isRegularBrowser) {
-
 	// Add view port info dynamically. might help iOS WKWebview
 	var meta = document.createElement('meta');
 	meta.name = 'viewport';
@@ -18745,6 +19208,7 @@ if (!app.isRegularBrowser) {
 		overlays.insertHTML('\n\t\t\t<div id=\'mobileOverlay\'>\n\t\t\t\t<div id=\'mobileDialog\'>\n\t\t\t\t<h1 style = "text-align:center">You are on a mobile Device</h1>\n\t\t\t\t\t<div style = "text-align:center;">\n\t\t\t\t\t\tConsider using our mobile app: <a href = "https://tblocks.app.link">TBlocks</a>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>');
 	} else {
 		app.isCordovaApp = false;
+		console.log('app starting');
 		app.start();
 	}
 }
@@ -18782,6 +19246,8 @@ module.exports = function () {
   var app = require('./../appMain.js');
   var fastr = require('fastr.js');
   var dso = require('./deviceScanOverlay.js');
+
+  var log = require('log.js'); // For debugging purposes - AMAN
 
   // Map of all dots to map SVG dotIndex attribure to JS objects
   actionDots.mapIndex = 0;
@@ -18851,7 +19317,7 @@ module.exports = function () {
     // System basically makes room for 10 dots.
     // some from right, some from left, some in the center.
     // Still a bit hard coded.
-    var slotw = w * 0.1;
+    var slotw = w * 0.094;
     var edgeSpacing = 7;
     var x = 0;
     var dotd = 66; // diameter
@@ -18877,6 +19343,7 @@ module.exports = function () {
       } else if (align === 'R') {
         x = w - slotw * pos;
       }
+
       actionDots.topDots[i].updateSvg(x, y, scale);
     }
   };
@@ -18928,9 +19395,11 @@ module.exports = function () {
       var buttonCenter = buttonLeft + 80 * scale;
       //console.log(svgb.createRect)
       //console.log(buttonLeft + 35*scale)
+      dso.robotAndTextPos = buttonCenter;
       dso.robotOnlyPos = buttonLeft + 35 * scale;
       this.svgDot = svgb.createRect('action-dot-bg', buttonLeft, y, buttonWidth, dotd, dotHalf);
-      this.svgText = svgb.createText('fa fas action-dot-fatext', buttonCenter, fontY, fastr.robot + " -?-");
+      // this.svgText = svgb.createText('fa fas action-dot-fatext', buttonCenter, fontY, fastr.robot+" -?-");
+      this.svgText = svgb.createText('fa fas action-dot-fatext', buttonCenter, fontY, fastr.robot + dso.deviceName);
       this.svgText.setAttribute('id', 'device-name-label');
 
       this.nameText = svgb.createText('fa fas action-dot-fatext', buttonCenter + buttonWidth / 6, y + dotd * 0.25 + fontSize / 3, "");
@@ -19074,6 +19543,7 @@ module.exports = function () {
       // while an overlay is up.
       var cmd = this.command;
       actionDots.reset();
+      //log.trace('4:', cmd, 'called');
       app.doCommand(cmd);
     } else {
       // If it's a pull down the hide any showing overlay first.
@@ -19161,6 +19631,11 @@ module.exports = function () {
   };
 
   actionDots.doPointerEvent = function (event) {
+    // if tutorial is active, ignore
+    if (app.isShowingTutorial) {
+      return;
+    }
+
     var elt = document.elementFromPoint(event.clientX, event.clientY);
     var t = event.type;
     var adi = actionDots.activeIndex;
@@ -19205,6 +19680,10 @@ module.exports = function () {
     // outside the element.
     // SVG items with the 'action-dot' class will process these events.
     interact('.action-dot', { context: svg }).draggable({}).on('down', function (event) {
+      //log.trace('action dot down');
+      if (app.isShowingTutorial) {
+        return;
+      }
       var dotIndex = event.currentTarget.getAttribute('dotIndex');
       actionDots.activeIndex = dotIndex;
       actionDots.dotMap[dotIndex].activate(1);
@@ -19213,6 +19692,7 @@ module.exports = function () {
     }).on('dragend', function (event) {
       actionDots.doPointerEvent(event);
     }).on('tap', function (event) {
+      //log.trace('action dot tap',event);
       actionDots.doPointerEvent(event);
     });
     return base;
@@ -19221,7 +19701,7 @@ module.exports = function () {
   return actionDots;
 }();
 
-},{"../blocks/identityBlocks/identityBlock.js":24,"./../appMain.js":18,"./deviceScanOverlay.js":46,"editStyle.js":55,"fastr.js":56,"interact.js":15,"svgbuilder.js":60}],44:[function(require,module,exports){
+},{"../blocks/identityBlocks/identityBlock.js":24,"./../appMain.js":18,"./deviceScanOverlay.js":46,"editStyle.js":57,"fastr.js":58,"interact.js":15,"log.js":60,"svgbuilder.js":62}],44:[function(require,module,exports){
 'use strict';
 
 /*
@@ -19323,7 +19803,7 @@ module.exports = function () {
   return calibrationOverlay;
 }();
 
-},{"./../appMain.js":18,"./../cxn.js":39,"./deviceScanOverlay.js":46,"./overlays.js":49,"editStyle.js":55}],45:[function(require,module,exports){
+},{"./../appMain.js":18,"./../cxn.js":39,"./deviceScanOverlay.js":46,"./overlays.js":49,"editStyle.js":57}],45:[function(require,module,exports){
 'use strict';
 
 /*
@@ -19391,7 +19871,7 @@ module.exports = function () {
   return debugMode;
 }();
 
-},{"./overlays.js":49,"log.js":58}],46:[function(require,module,exports){
+},{"./overlays.js":49,"log.js":60}],46:[function(require,module,exports){
 'use strict';
 
 /*
@@ -19465,18 +19945,31 @@ module.exports = function () {
   };
 
   dso.updateScreenName = function (botName) {
+    console.log("update name", botName);
     dso.deviceName = botName;
     dso.disconnectButton.disabled = dso.deviceName === dso.nonName;
     // console.log(dso.decoratedName())
     // console.log(cxn.versionNumber)
     //dso.deviceName = "vegat"
-    if (cxn.versionNumber >= 11 && dso.deviceName !== dso.nonName) {
+
+    if (cxn.versionNumber >= 11 && dso.deviceName !== dso.nonName && cxn.batteryPercent !== -1) {
       dso.deviceNameLabel.innerHTML = fastr.robot;
       dso.deviceNameLabel.setAttribute('x', dso.robotOnlyPos);
-      dso.batteryLabel.innerHTML = dso.getBattery();
+      dso.actualNameLabel = document.getElementById('actual-name-label');
       dso.actualNameLabel.innerHTML = dso.deviceName;
+      dso.batteryLabel = document.getElementById('battery-label');
+      dso.batteryLabel.innerHTML = dso.getBattery();
     } else {
       dso.deviceNameLabel.innerHTML = fastr.robot + ' ' + dso.deviceName;
+      dso.deviceNameLabel.setAttribute('x', dso.robotAndTextPos);
+      if (dso.batteryLabel != null) {
+        dso.batteryLabel.innerHTML = null;
+        dso.batteryLabel = null;
+      }
+      if (dso.actualNameLabel != null) {
+        dso.actualNameLabel.innerHTML = null;
+        dso.actualNameLabel = null;
+      }
     }
     if (dso.deviceName !== dso.nonName) {
       cxn.botName = dso.deviceName;
@@ -19507,6 +20000,12 @@ module.exports = function () {
     };
   };
 
+  dso.initTestVars = function (e) {
+    dso.testKeyTCount = 0;
+    dso.testKeyCCount = 0;
+    dso.testBotsShowing = false;
+  };
+
   dso.testButton = function (e) {
     if (e.pageX < 60 && e.pageY < 200 && !dso.testBotsShowing) {
       dso.testBotsShowing = true;
@@ -19518,23 +20017,27 @@ module.exports = function () {
   };
 
   dso.addTestBots = function () {
+    console.log("Adding test bots");
     var testNames = ['CUPUR', 'CAPAZ', 'FELIX', 'SADOW', 'NATAN', 'GATON', 'FUTOL', 'BATON', 'FILON', 'CAPON'];
     for (var i in testNames) {
       dso.addNewBlock(testNames[i], 0, icons.t55);
     }
+    dso.testBotsShowing = true;
   };
 
   dso.removeAllBots = function () {
+    console.log("Removing all bots");
     dso.tbots = {};
     dso.svg.removeChild(dso.tbotGroup);
     dso.tbotGroup = dso.svg.appendChild(svgb.createGroup('', 0, 0));
+    dso.testBotsShowing = false;
   };
 
-  dso.testKeyTCount = 0;
-  dso.testKeyCCount = 0;
   dso.keyEvent = function (e) {
     if (e.key === 'T') {
-      dso.testKeyTCount += 1;
+      if (dso.testBotsShowing === false) {
+        dso.testKeyTCount += 1;
+      }
     } else if (e.key === 'C') {
       dso.testKeyCCount += 1;
     } else {
@@ -19551,6 +20054,7 @@ module.exports = function () {
 
   // External function for putting it all together.
   dso.start = function () {
+    console.log('start called');
     document.body.addEventListener('keydown', dso.keyEvent, false);
 
     // Construct the DOM for the overlay.
@@ -19593,6 +20097,35 @@ module.exports = function () {
 
     dso.updateLabel();
     dso.updateScreenName(dso.deviceName);
+
+    // setup dragging
+    dso.initDragScroll(dso.svg);
+
+    dso.initTestVars();
+  };
+
+  dso.initDragScroll = function () {
+    var shell = document.getElementById("dsoSvgShell");
+    var svg = document.getElementById("dsoSVG");
+    dso.pos = { top: 0, left: 0, x: 0, y: 0 };
+    dso.pointerDown = false;
+    interact('.dso-svg-backgound').on('down', function (event) {
+      dso.pointerDown = true;
+      dso.pos = {
+        left: shell.scrollLeft,
+        top: shell.scrollTop,
+        x: event.clientX,
+        y: event.clientY
+      };
+    }).on('move', function (event) {
+      if (dso.pointerDown) {
+        var dx = event.clientX - dso.pos.x;
+        var dy = event.clientY - dso.pos.y;
+        shell.scrollTop = dso.pos.top - dy;
+      }
+    }).on('up', function (event) {
+      dso.pointerDown = false;
+    });
   };
 
   dso.sorryCantDoIt = function () {
@@ -19607,6 +20140,13 @@ module.exports = function () {
     var row = Math.floor(i / w);
     var col = i % w;
     return { x: 20 + col * 150, y: 20 + row * 150 };
+  };
+
+  // calculates min height of svg based on number of bots needed to be displayed
+  dso.updateSVGHeight = function () {
+    var num = Object.keys(dso.tbots).length;
+    var height = 20 + Math.ceil(num / dso.columns) * 150;
+    document.getElementById('dsoSVG').style.height = height + 'px';
   };
 
   dso.pauseResume = function (active) {
@@ -19633,10 +20173,14 @@ module.exports = function () {
       var tb = dso.tbots[t];
       tb.setLocation(loc.x, loc.y);
     }
+    // sets height of tbots
+    dso.updateSVGHeight();
   };
 
   // Close the overlay.
   dso.exit = function () {
+    console.log("exit");
+
     document.body.removeEventListener('keydown', dso.keyEvent, false);
 
     interact.debug().defaultOptions._holdDuration = dso.saveHold;
@@ -19649,11 +20193,14 @@ module.exports = function () {
     dso.background = null;
     dso.tbotGroup = null;
 
-    if (cxn.scanning) {
-      cxn.stopScanning();
-      dso.watch.dispose();
-      dso.watch = null;
-    }
+    // if (cxn.scanning) {
+    //   console.log("cxn.scanning");
+    //   cxn.stopScanning();
+    //   dso.watch.dispose();
+    //   dso.watch = null;
+    // } else {
+    //   console.log("not cxn.scanning");
+    // }
 
     var botName = dso.deviceName;
     var message = '(vs)';
@@ -19661,18 +20208,22 @@ module.exports = function () {
   };
 
   dso.tryConnect = function (tb) {
+    console.log("tryconnect", tb);
     if (cxn.scanUsesHostDialog()) {
+      console.log("trycon1");
       // In Host dialog mode (used on browsers) a direct connection
       // can be made, so just bring up the host scan. That will
       // disconnect any current as well.
       dso.onScanButton();
     } else if (!tb.selected) {
+      console.log("trycon2");
       // Right now only one connection is allowed
       //tb.setConnectionStatus(cxn.statusEnum.CONNECTING);
       cxn.disconnectAll();
       cxn.connect(tb.name);
       dso.selectDevice(tb.name);
     } else {
+      console.log("trycon3");
       // Just clear this one
       // Only one is connected so use the main button.
       cxn.disconnectAll();
@@ -19682,13 +20233,16 @@ module.exports = function () {
   dso.onScanButton = function (e) {
     if (cxn.scanUsesHostDialog()) {
       if (cxn.scanning) {
+        console.log("onScanButton1");
         cxn.stopScanning();
         dso.watch.dispose();
         dso.watch = null;
       } else {
+        console.log("onScanButton2");
         dso.onDisconnectButton();
         dso.refreshList(cxn.devices);
         dso.watch = cxn.connectionChanged.subscribe(dso.refreshList);
+        console.log(cxn.devices);
         cxn.startScanning();
       }
     }
@@ -19706,12 +20260,14 @@ module.exports = function () {
     };
     tb.setConnectionStatus(status);
     dso.tbots[key] = tb;
+    dso.updateSVGHeight();
     return tb;
   };
 
   // refreshList() -- rebuilds the UI list based on devices the
   // connection manager knows about.
   dso.refreshList = function (bots) {
+    console.log("refreshList");
     var cxnSelectedBot = dso.nonName;
     for (var key in bots) {
       var status = bots[key].status;
@@ -19732,7 +20288,7 @@ module.exports = function () {
   return dso;
 }();
 
-},{"./../cxn.js":39,"./overlays.js":49,"fastr.js":56,"icons.js":57,"interact.js":15,"svgbuilder.js":60,"tbot.js":61}],47:[function(require,module,exports){
+},{"./../cxn.js":39,"./overlays.js":49,"fastr.js":58,"icons.js":59,"interact.js":15,"svgbuilder.js":62,"tbot.js":63}],47:[function(require,module,exports){
 'use strict';
 
 /*
@@ -19953,7 +20509,7 @@ module.exports = function () {
   return dov;
 }();
 
-},{"./../conductor.js":38,"./deviceScanOverlay.js":46,"./overlays.js":49,"slideControl.js":59}],48:[function(require,module,exports){
+},{"./../conductor.js":38,"./deviceScanOverlay.js":46,"./overlays.js":49,"slideControl.js":61}],48:[function(require,module,exports){
 'use strict';
 
 /*
@@ -20113,13 +20669,14 @@ module.exports = function () {
     screens.fileOverlay = require('./fileOverlay.js');
     screens.splashOverlay = require('./splashOverlay.js');
     screens.calibrationOverlay = require('./calibrationOverlay.js');
+    screens.tutorialOverlay = require('./tutorialOverlay.js');
     overlays.screens = screens;
 
     return overlays;
   };
 
   overlays.insertHTML = function (overlayHTML) {
-    var body = '\n    <div id=\'overlayRoot\' style=\'top:80px; height:calc(100% - 80px);\'>\n      <div id=\'overlayShell\' >' + overlayHTML + '\n      </div>\n    </div>';
+    var body = '\n    <div id=\'overlayRoot\'>\n      <div id=\'overlayShell\' >' + overlayHTML + '\n      </div>\n    </div>';
     overlays.overlayLayer.innerHTML = body;
     overlays.overlayShell = document.getElementById('overlayShell');
   };
@@ -20204,7 +20761,7 @@ module.exports = function () {
   return overlays;
 }();
 
-},{"./calibrationOverlay.js":44,"./debugOverlay.js":45,"./deviceScanOverlay.js":46,"./driveOverlay.js":47,"./fileOverlay.js":48,"./splashOverlay.js":50,"editStyle.js":55,"log.js":58}],50:[function(require,module,exports){
+},{"./calibrationOverlay.js":44,"./debugOverlay.js":45,"./deviceScanOverlay.js":46,"./driveOverlay.js":47,"./fileOverlay.js":48,"./splashOverlay.js":50,"./tutorialOverlay.js":52,"editStyle.js":57,"log.js":60}],50:[function(require,module,exports){
 'use strict';
 
 /*
@@ -20296,10 +20853,8 @@ module.exports = function () {
   return splashOverlay;
 }();
 
-},{"./../appMain.js":18,"./overlays.js":49,"editStyle.js":55}],51:[function(require,module,exports){
-'use strict';
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+},{"./../appMain.js":18,"./overlays.js":49,"editStyle.js":57}],51:[function(require,module,exports){
+"use strict";
 
 /*
 Copyright (c) 2020 Trashbots - SDG
@@ -20314,6 +20869,333 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+// Drive mode overlay allows users to diretly control the motors and other IO.
+module.exports = function () {
+
+  var tutorialData = {};
+
+  function TutorialPage(name, type, titleText, aboutText) {
+    return {
+      "name": name,
+      "type": type,
+      "titleText": titleText,
+      "aboutText": aboutText
+    };
+  }
+
+  tutorialData.pages = [TutorialPage('intro', 'basic', 'TBlocks Tutorial - Introduction', 'Welcome to the tutorial for TBlocks! Through this, you will learn about each of the different action buttons and coding blocks. At any point, you can click “End Tutorial” to close this panel. Click “Next Page” to continue!'), TutorialPage('play', 'dot', 'TBlocks Tutorial - Play Button', 'This is the “Play” button. You will use this button each time you want to run your code on the Bot.'), TutorialPage('stop', 'dot', 'TBlocks Tutorial - Stop Button', 'This is the “Stop” button. You will use this button each time you want to stop running your code on the Bot. This will stop the motors and clear the LED matrix!'), TutorialPage('driveOverlay', 'dot', 'TBlocks Tutorial - Drive Button', 'This is the “Gamepad” button. Clicking this button will allow you to drive your robot around using the gamepad controller.'), TutorialPage('debugOverlay', 'dot', 'TBlocks Tutorial - Debug Button', 'This is the “Debug” button. This is a sneak peek into what’s going on in the background!'), TutorialPage('pages', 'dot', 'TBlocks Tutorial - Pages Button', 'This is the “Pages” button. Click between the pages to code up to 5 programs at once!'), TutorialPage('edit', 'dot', 'TBlocks Tutorial - Edit Button', 'This is the “Edit” button. Use this drop down for functions such as “Copy”, “Paste”, “Delete All”, and “Settings”.'), TutorialPage('calibrate', 'dot', 'TBlocks Tutorial - Calibrate Button', 'This is the “Calibrate” button. This button can be used to calibrate the motors to drive perfectly straight. Make sure you’re on the most updated version (click the button to check)!'), TutorialPage('tutorialOverlay', 'dot', 'TBlocks Tutorial - Tutorial Button', 'This is the “Tutorial” button. Use this button at any time to access this tutorial again!'), TutorialPage('deviceScanOverlay', 'dot', 'TBlocks Tutorial - Device Scan Button', 'This is the “Device Scan” button. Click here to connect a Bot to your app!'), TutorialPage('start', 'palette', 'TBlocks Tutorial - Start Palette', 'This is the “Start” Palette. These are the blocks needed to start a chain. Click below to see what each of the blocks specifically does!'), TutorialPage('action', 'palette', 'TBlocks Tutorial - Action Palette', 'This is the “Action” Palette. These are the blocks that do things on the Bot. Use this palette to play with the LED display, run the motors, play music, or use variables. Click below to see what each of the blocks specifically does!'), TutorialPage('control', 'palette', 'TBlocks Tutorial - Control Palette', 'This is the “Control” Palette. These are the blocks that control the flow of the program. There is a looping block and a wait block. Click below to see what each of the blocks specifically does!')];
+
+  tutorialData.blockPages = {
+    identity: TutorialPage('identity', 'block', 'Run Block', 'Runs its program when the “Play” button is pressed (in the top left corner)'),
+    identityAccelerometer: TutorialPage('identityAccelerometer', 'block', 'Accelerometer Block', 'Runs its program when the Bot senses a certain acceleration'),
+    identityButton: TutorialPage('identityButton', 'block', 'Button Block', 'Runs its program when "A", "B", or "A + B" button(s) are clicked'),
+    identityTemperature: TutorialPage('identityTemperature', 'block', 'Temperature Block', 'Runs its program when the Bot senses a certain temperature'),
+
+    picture: TutorialPage('picture', 'block', 'Smile Block', 'Shows an image on the LED display'),
+    sound: TutorialPage('sound', 'block', 'Sound Block', 'Plays a sequence of up to 4 notes'),
+    motor: TutorialPage('motor', 'block', 'Single Motor Block', 'Runs a single motor (1 or 2) for a set time and at a set speed'),
+    twoMotor: TutorialPage('twoMotor', 'block', 'Double Motor Block', 'Runs both motors for a set time and at a set speed'),
+    variableSet: TutorialPage('variableSet', 'block', 'Set Block', 'Sets variable A, B, or C to a certain value'),
+    variableAdd: TutorialPage('variableAdd', 'block', 'Add Block', 'Adds or subtracts a value to variable A, B, or C'),
+    print: TutorialPage('print', 'block', 'Print Block', 'Prints the value of a variable OR will print the value of a sensor'),
+
+    wait: TutorialPage('wait', 'block', 'Wait Block', 'Pauses the program for a certain amount of time'),
+    loop: TutorialPage('loop', 'block', 'Loop Block', 'Loops through a sequence of TBlocks a set amount of times'),
+    tail: TutorialPage('tail', 'block', 'Loop Block', 'Loops through a sequence of TBlocks a set amount of times')
+  };
+
+  return tutorialData;
+}();
+
+},{}],52:[function(require,module,exports){
+'use strict';
+
+/*
+Copyright (c) 2020 Trashbots - SDG
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+// Drive mode overlay allows users to diretly control the motors and other IO.
+module.exports = function () {
+
+  var tutorialOverlay = {};
+
+  var editStyle = require('editStyle.js');
+  var app = require('./../appMain.js');
+  var tbe = app.tbe;
+  var overlays = require('./overlays.js');
+  var dots = require('./actionDots.js');
+
+  var tutorialData = require('./tutorialData.js');
+
+  var tutorialPages = tutorialData.pages;
+  var tutorialBlockPages = tutorialData.blockPages;
+
+  app.isShowingTutorial = false;
+
+  var curPageIndex = 0;
+
+  // External function for putting it all together.
+  tutorialOverlay.start = function () {
+    app.isShowingTutorial = true;
+
+    overlays.insertHTML('\n        <style id=\'tutorial-text-id\'>\n          tutorial-text { font-size:18px; }\n        </style>\n        <div id=\'tutorialOverlay\'>\n            <div id=\'tutorialDialog\'>\n              <p id="tutorial-title" class=\'tutorial-title\'></p>\n              <p id = \'tutorial-about\' class=\'tutorial-body tutorial-text\'></p>\n              <br>\n              <div align=\'center\'>\n                  <button id=\'tutorial-prev\' class=\'tutorial-button tutorial-text\'>Previous Page</button>\n                  <button id=\'tutorial-next\' class=\'tutorial-button tutorial-text\'>Next Page</button>\n                  <button id=\'tutorial-end\' class=\'tutorial-button tutorial-text\'>End Tutorial</button>\n              </div>\n              <br>\n              <p id="tutorial-block-title" class=\'tutorial-title\'></p>\n              <p id = \'tutorial-block-about\' class=\'tutorial-body tutorial-text\'></p>\n              <br>\n            </div>\n        </div>');
+
+    // Step to next tutorial page
+    var prevButton = document.getElementById('tutorial-prev');
+    prevButton.onclick = tutorialOverlay.prevTutorial;
+
+    // Step to next tutorial page
+    var nextButton = document.getElementById('tutorial-next');
+    nextButton.onclick = tutorialOverlay.nextTutorial;
+
+    // Exit simply go back to editor.
+    var endButton = document.getElementById('tutorial-end');
+    endButton.onclick = tutorialOverlay.endTutorial;
+
+    tutorialOverlay.showTutorialPage(0);
+    tutorialOverlay.deactivateAllButtons();
+  };
+
+  tutorialOverlay.resize = function () {
+    var overlay = document.getElementById('tutorialOverlay');
+    var w = overlay.clientWidth;
+    var h = overlay.clientHeight;
+    var scale = editStyle.calcSreenScale(w, h);
+
+    var fs = 20 * scale + 'px';
+    var elts = document.getElementsByClassName("tutorial-text");
+    var i = 0;
+    for (i = 0; i < elts.length; i++) {
+      elts[i].style.fontSize = fs;
+    }
+
+    var bh = 50 * scale + 'px';
+    elts = document.getElementsByClassName("tutorial-button");
+    for (i = 0; i < elts.length; i++) {
+      elts[i].style.height = bh;
+    }
+
+    // resize based on tutorial page type (palette vs. non-palette)
+
+    var root = document.getElementById('overlayRoot');
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    var scale = editStyle.calcSreenScale(w, h);
+    var baseValue = 80 * scale;
+    var topOffset;
+    var botOffset;
+    if (tutorialPages[curPageIndex].type === "palette") {
+      topOffset = 0;
+      botOffset = 2 * baseValue;;
+    } else {
+      topOffset = baseValue;
+      botOffset = 0;
+    }
+    var tstr = topOffset.toString() + 'px';
+    var hstr = "calc(100% - " + (topOffset + botOffset).toString() + "px)";
+    root.style.height = hstr;
+    root.style.top = tstr;
+
+    var dialog = document.getElementById("tutorialDialog");
+    dialog.style.top = "calc(4% + " + (baseValue - topOffset).toString() + "px)";
+    console.log("DIALOG", dialog.style.top);
+  };
+
+  tutorialOverlay.prevTutorial = function () {
+    // console.log("prevTutorial");
+    tutorialOverlay.deselectPaletteBlocks();
+    tutorialOverlay.showTutorialPage(curPageIndex - 1);
+  };
+
+  tutorialOverlay.nextTutorial = function () {
+    // console.log("nextTutorial");
+    tutorialOverlay.deselectPaletteBlocks();
+    tutorialOverlay.showTutorialPage(curPageIndex + 1);
+  };
+
+  tutorialOverlay.showTutorialPage = function (index) {
+    console.log("showing page " + index);
+    curPageIndex = index;
+
+    var page = tutorialPages[curPageIndex];
+
+    // change text of tutorial page
+    var tutorialTitle = document.getElementById("tutorial-title");
+    var tutorialAbout = document.getElementById("tutorial-about");
+    tutorialTitle.innerHTML = page.titleText;
+    tutorialTitle.innerHTML += " (" + (curPageIndex + 1) + "/" + tutorialPages.length + ")";
+    tutorialAbout.innerHTML = page.aboutText;
+
+    //resize
+    tutorialOverlay.resize();
+
+    // if tutorial page for dot, highlight the dot
+    var tutorialOverlayHTML = document.getElementById("tutorialOverlay");
+    tutorialOverlay.deactivateAllButtons();
+    if (page.type === "dot") {
+      dots.commandDots[page.name].activate(3);
+    }
+
+    // switch tabs
+    if (page.type === "palette") {
+      tbe.switchTabsTutorial(page.name);
+    }
+
+    // enable/disable prev/next buttons
+    var prevButton = document.getElementById('tutorial-prev');
+    var nextButton = document.getElementById('tutorial-next');
+    prevButton.disabled = index == 0;
+    nextButton.disabled = index == tutorialPages.length - 1;
+
+    // reset tutorial block page
+    document.getElementById("tutorial-block-title").innerHTML = "";
+    document.getElementById("tutorial-block-about").innerHTML = "";
+
+    // default block selected
+    if (page.type == "palette") {
+      if (page.name == 'start') {
+        tutorialOverlay.showBlockDetails(app.tbe.getPaletteBlockByName('identity'));
+      } else if (page.name == 'action') {
+        tutorialOverlay.showBlockDetails(app.tbe.getPaletteBlockByName('picture'));
+      } else if (page.name == 'control') {
+        tutorialOverlay.showBlockDetails(app.tbe.getPaletteBlockByName('wait'));
+      }
+    }
+  };
+
+  tutorialOverlay.deactivateAllButtons = function () {
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = Object.values(dots.commandDots)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var val = _step.value;
+
+        val.activate(0);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator.return) {
+          _iterator.return();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
+    }
+  };
+
+  tutorialOverlay.showBlockDetails = function (block) {
+    console.log("showBlockDetails", block);
+    var page = tutorialBlockPages[block.name];
+    // update page information
+    var tutorialBlockTitle = document.getElementById("tutorial-block-title");
+    var tutorialBlockAbout = document.getElementById("tutorial-block-about");
+    tutorialBlockTitle.innerHTML = page.titleText;
+    tutorialBlockAbout.innerHTML = page.aboutText;
+    // highlight only the selected block
+    tutorialOverlay.deselectPaletteBlocks();
+    block.svgRect.classList.add('selected-block');
+    // if it is the loop block, highlight both
+    if (block.name == "loop") {
+      app.tbe.getPaletteBlockByName("tail").svgRect.classList.add('selected-block');
+    } else if (block.name == "tail") {
+      app.tbe.getPaletteBlockByName("loop").svgRect.classList.add('selected-block');
+    }
+  };
+
+  tutorialOverlay.deselectPaletteBlocks = function () {
+    var _iteratorNormalCompletion2 = true;
+    var _didIteratorError2 = false;
+    var _iteratorError2 = undefined;
+
+    try {
+      for (var _iterator2 = document.querySelectorAll(".selected-block")[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        var b = _step2.value;
+
+        b.classList.remove('selected-block');
+      }
+    } catch (err) {
+      _didIteratorError2 = true;
+      _iteratorError2 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+          _iterator2.return();
+        }
+      } finally {
+        if (_didIteratorError2) {
+          throw _iteratorError2;
+        }
+      }
+    }
+  };
+
+  tutorialOverlay.endTutorial = function () {
+    console.log("endTutorial");
+    app.isShowingTutorial = false;
+    tutorialOverlay.deactivateAllButtons();
+    tutorialOverlay.deselectPaletteBlocks();
+    overlays.hideOverlay(null);
+  };
+
+  tutorialOverlay.exit = function () {};
+
+  tutorialOverlay.showLaunchAboutBox = function () {
+    var value = app.storage.getItem('teakBlockShowAboutBox');
+    return value === null || value === true;
+  };
+
+  return tutorialOverlay;
+}();
+
+},{"./../appMain.js":18,"./actionDots.js":43,"./overlays.js":49,"./tutorialData.js":51,"editStyle.js":57}],53:[function(require,module,exports){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+/*
+Copyright (c) 2020 Trashbots - SDG
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20353,6 +21235,7 @@ module.exports = function () {
 
 	// Visitor for each block in the diagram
 	tbe.forEachDiagramBlock = function (callBack) {
+		//console.log('diagram blocks', tbe.diagramBlocks);
 		for (var key in tbe.diagramBlocks) {
 			if (tbe.diagramBlocks.hasOwnProperty(key)) {
 				var block = tbe.diagramBlocks[key];
@@ -20388,6 +21271,10 @@ module.exports = function () {
 	tbe.clearStates = function clearStates(block) {
 		// Clear any showing forms or multi step state.
 		// If the user has interacted with a general part of the editor.
+		if (app.isShowingTutorial) {
+			return;
+		}
+
 		actionDots.reset();
 		app.overlays.hideOverlay(null);
 		this.components.blockSettings.hide(block);
@@ -20418,6 +21305,8 @@ module.exports = function () {
 			return null;
 		}
 		var values = text.split(':');
+		//log.trace('diagramblocks!!', this.diagramBlocks, values);
+
 		var obj = null;
 		if (values[0] === 'd') {
 			obj = this.diagramBlocks[text];
@@ -20451,9 +21340,27 @@ module.exports = function () {
 			tbe.currentDoc = docName;
 			var loadedDocText = app.storage.getItem(docName);
 			if (loadedDocText !== null) {
-				teakText.textToBlocks(tbe, loadedDocText);
+				//teakText.textToBlocks(tbe, loadedDocText);
+				tbe.textToBlocks(docName, loadedDocText);
 			}
 			actionDots.setDocTitle(docName.substring(3, 4));
+		}
+	};
+
+	tbe.textToBlocks = function (docName, docText) {
+		if (docName === null) {
+			docName = tbe.currentDoc;
+		}
+		//teakText.textToBlocks(tbe, docText);
+		try {
+			teakText.textToBlocks(tbe, docText);
+		} catch (error) {
+			var blankDoc = "()";
+
+			tbe.clearStates();
+			tbe.clearDiagramBlocks();
+			app.storage.setItem(docName, blankDoc);
+			teakText.textToBlocks(tbe, blankDoc);
 		}
 	};
 
@@ -20467,6 +21374,7 @@ module.exports = function () {
 		var block = new this.FunctionBlock(x, y, name);
 		block.isPaletteBlock = false;
 		block.interactId = tbe.nextBlockId('d:');
+		if (block.name === 'loop') {}
 		this.diagramBlocks[block.interactId] = block;
 		return block;
 	};
@@ -20574,6 +21482,8 @@ module.exports = function () {
 	tbe.replicateChunk = function (chain, endBlock, offsetX, offsetY) {
 
 		this.clearStates(); //???
+
+		//log.trace('duplicating', chain,endBlock === null); //AMAN
 
 		var stopPoint = null;
 		if (endBlock !== undefined && endBlock !== null) {
@@ -20877,6 +21787,7 @@ module.exports = function () {
 		while (block !== null) {
 			block.dragging = state;
 			// block.hilite(state);
+
 			block = block.next;
 		}
 	};
@@ -21078,6 +21989,7 @@ module.exports = function () {
 
 		// Refine the action based on geometery.
 		if (target !== null) {
+
 			if (self.left <= target.left) {
 				if (target.prev !== null) {
 					if (!self.isStartBlock()) {
@@ -21239,6 +22151,17 @@ module.exports = function () {
 				this.snapTarget.prev.next = this;
 				this.snapTarget.prev = thisLast;
 
+				//log.trace('insert',this);
+				//	this.diagramBlocks[this.interactId] = this;
+
+				/*
+    tbe.forEachDiagramBlock(function (key) {
+    	if(key.interactId === this.interactId) {
+    		log.trace(key);
+    	}
+    });
+    */
+
 				// Set up animation to slide down old blocks.
 				tbe.animateMove(this.snapTarget, this.snapTarget.last, width, 0, 10);
 			}
@@ -21398,16 +22321,33 @@ module.exports = function () {
 	};
 
 	tbe.identityAutoPlace = function identityAutoPlace(block) {
-		tbe.forEachDiagramBlock(function (compare) {
-			//console.log("compare", tbe.intersectingArea(compare, block));
-			if (tbe.intersectingArea(compare, block) > 100 && compare !== block && block.bottom + 120 < tbe.height - 150) {
-				block.dmove(0, 120);
-				tbe.identityAutoPlace(block);
+		while (block.bottom + 120 <= tbe.height - 100) {
+			// check if intersecting
+			var signal = { valid: true };
+			tbe.forEachDiagramBlock(function (compare) {
+				if (tbe.intersectingArea(compare, block) > 100 && compare !== block && block.bottom + 120 < tbe.height - 150) {
+					signal.valid = false;
+					return;
+				}
+			});
+			if (signal.valid) {
 				return;
-			} else if (block.bottom + 120 > tbe.height - 100) {
-				tbe.deleteChunk(block, block);
+			} else {
+				block.dmove(0, 120);
 			}
-		});
+		}
+		tbe.deleteChunk(block, block);
+
+		// tbe.forEachDiagramBlock(function (compare) {
+		// 	//console.log("compare", tbe.intersectingArea(compare, block));
+		// 	if (tbe.intersectingArea(compare, block) > 100 && compare !== block && block.bottom + 120 < tbe.height - 150) {
+		// 		block.dmove(0, 120);
+		// 		tbe.identityAutoPlace(block);
+		// 		return;
+		// 	} else if (block.bottom + 120 > tbe.height - 100) {
+		// 		tbe.deleteChunk(block, block);
+		// 	}
+		// });
 	};
 
 	tbe.keyEvent = function (e) {
@@ -21477,6 +22417,7 @@ module.exports = function () {
 		} else if (key === 53) {
 			tbe.loadDoc('docE');
 		} else if (key === 80) {
+			log.trace('key pressed');
 			conductor.playAll();
 		} else if (key === 83) {
 			conductor.stopAll();
@@ -21538,6 +22479,7 @@ module.exports = function () {
 		// right next to a block, e.g. allow some safe zones.
 		interact('.editor-background').on('down', function (event) {
 			try {
+				//save here potentially
 				thisTbe.clearStates();
 				teakselection.startSelectionBoxDrag(event);
 			} catch (error) {
@@ -21559,18 +22501,31 @@ module.exports = function () {
 		interact('.drag-group')
 		// Pointer events.
 		.on('down', function (event) {
+			if (app.isShowingTutorial) {
+				return;
+			}
 			tbe.pointerDownObject = event.target;
 		}).on('tap', function (event) {
 			var block = thisTbe.elementToBlock(event.target);
 			if (block !== null && block.isPaletteBlock) {
 				// Tapping on an palette item will place it on the sheet.
-				tbe.autoPlace(block);
+				var tutorialOverlay = require("./overlays/tutorialOverlay.js");
+				if (app.isShowingTutorial) {
+					var block = thisTbe.elementToBlock(event.target);
+					tutorialOverlay.showBlockDetails(block);
+				} else {
+					tbe.autoPlace(block);
+				}
 			} else {
 				// Tapping on diagram block brings up a config page.
 				actionDots.reset();
+				//log.trace(thisTbe.components);	
 				thisTbe.components.blockSettings.tap(block);
 			}
 		}).on('up', function (event) {
+			if (app.isShowingTutorial) {
+				return;
+			}
 			var block = thisTbe.elementToBlock(event.target);
 			if (block.rect.top > tbe.height - 100 && !block.isPaletteBlock) {
 				event.interaction.stop();
@@ -21586,6 +22541,10 @@ module.exports = function () {
 				}
 			}
 		}).on('move', function (event) {
+			//log.trace('moving rn');
+			if (app.isShowingTutorial) {
+				return;
+			}
 			try {
 				var interaction = event.interaction;
 				var block = thisTbe.elementToBlock(event.target);
@@ -21602,14 +22561,41 @@ module.exports = function () {
 						var next = block;
 						var prev = block;
 						if (block.nesting > 0 && notIsolated && !block.isGroupSelected()) {
-							next = block.next;
-							prev = block.prev;
-							block.next.prev = prev;
-							block.prev.next = next;
-							block.next = null;
-							block.prev = null;
-							if (next !== null) {
-								tbe.animateMove(next, next.last, -block.width, 0, 10);
+							var temp_block = block;
+							var nesting = 2;
+							var width = 0;
+
+							if (block.name === 'loop') {
+								var temp_block = block;
+								var nesting = 0;
+								var tail = block.flowTail;
+								var width = 0;
+
+								while (temp_block !== tail) {
+									nesting += 1;
+									width += temp_block.width;
+									temp_block = temp_block.next;
+								}
+
+								nesting += 1;
+								width += temp_block.width;
+								next = block.flowTail.next;
+								prev = block.prev;
+								block.flowTail.next.prev = prev;
+								block.prev.next = next;
+								block.flowTail.next = null;
+								block.prev = null;
+								tbe.animateMove(next, next.last, -width, 0, 10);
+							} else {
+								next = block.next;
+								prev = block.prev;
+								block.next.prev = prev;
+								block.prev.next = next;
+								block.next = null;
+								block.prev = null;
+								if (next !== null) {
+									tbe.animateMove(next, next.last, -block.width, 0, 10);
+								}
 							}
 						} else if (block.nesting > 0 && notIsolated && block.isGroupSelected()) {
 							next = block;
@@ -21687,6 +22673,7 @@ module.exports = function () {
 				// happen after the user lets go.
 
 				var block = thisTbe.elementToBlock(event.target);
+
 				if (block === null) return;
 				if (!block.dragging) {
 					// If snap happens in coasting-move
@@ -21797,18 +22784,37 @@ module.exports = function () {
 
 		tbe.tabGroups = [];
 		tbe.tabGroups['start'] = tbe.dropAreaGroup.childNodes[0];
-		tbe.tabGroups['fx'] = tbe.dropAreaGroup.childNodes[1];
+		tbe.tabGroups['action'] = tbe.dropAreaGroup.childNodes[1];
 		tbe.tabGroups['control'] = tbe.dropAreaGroup.childNodes[2];
 
 		// For event routing.
 		tbe.tabGroups['start'].setAttribute('group', 'start');
-		tbe.tabGroups['fx'].setAttribute('group', 'fx');
+		tbe.tabGroups['action'].setAttribute('group', 'action');
 		tbe.tabGroups['control'].setAttribute('group', 'control');
 	};
 
 	tbe.switchTabs = function (group) {
 		// This moves the tab background to the front.
+		if (app.isShowingTutorial) {
+			return;
+		}
 		this.clearStates();
+		var tab = tbe.tabGroups[group];
+		this.dropArea = tab;
+		tbe.dropAreaGroup.appendChild(tab);
+		tbe.showTabGroup(group);
+	};
+
+	tbe.switchTabsTutorial = function (group) {
+		// This moves the tab background to the front.
+		// soft clearStates
+		actionDots.reset();
+		// app.overlays.hideOverlay(null);
+		this.components.blockSettings.hide();
+		tbe.forEachDiagramBlock(function (b) {
+			b.markSelected(false);
+		});
+
 		var tab = tbe.tabGroups[group];
 		this.dropArea = tab;
 		tbe.dropAreaGroup.appendChild(tab);
@@ -21871,10 +22877,20 @@ module.exports = function () {
 		// dropAreaGroup.appendChild(tbe.createTabSwitcherButton());
 	};
 
+	tbe.getPaletteBlockByName = function (name) {
+		for (var k in app.tbe.paletteBlocks) {
+			var b = app.tbe.paletteBlocks[k];
+			if (b.name == name) {
+				return b;
+			}
+		}
+		return null;
+	};
+
 	return tbe;
 }();
 
-},{"./appMain.js":18,"./conductor.js":38,"./fblock-settings.js":41,"./overlays/actionDots.js":43,"./teakselection":52,"./teaktext.js":53,"./trashBlocks.js":54,"assert":2,"icons.js":57,"interact.js":15,"log.js":58,"svgbuilder.js":60}],52:[function(require,module,exports){
+},{"./appMain.js":18,"./conductor.js":38,"./fblock-settings.js":41,"./overlays/actionDots.js":43,"./overlays/tutorialOverlay.js":52,"./teakselection":54,"./teaktext.js":55,"./trashBlocks.js":56,"assert":2,"icons.js":59,"interact.js":15,"log.js":60,"svgbuilder.js":62}],54:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22033,7 +23049,7 @@ module.exports = function () {
   return tbSelecton;
 }();
 
-},{"interact.js":15,"svgbuilder.js":60}],53:[function(require,module,exports){
+},{"interact.js":15,"svgbuilder.js":62}],55:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22173,6 +23189,7 @@ module.exports = function () {
     var firstBlock = null;
     for (i = 0; i < jsoBlocks.length; i++) {
       var blockName = jsoBlocks[i]._0;
+      log.trace('add block called from teaktext', blockname);
       var block = tbe.addBlock(x, y, blockName);
       if (firstBlock === null) {
         firstBlock = block;
@@ -22230,7 +23247,7 @@ module.exports = function () {
   return teakText;
 }();
 
-},{"log.js":58,"teak":17}],54:[function(require,module,exports){
+},{"log.js":60,"teak":17}],56:[function(require,module,exports){
 "use strict";
 
 /*
@@ -22307,7 +23324,7 @@ module.exports = function () {
   return trashBlocks;
 }();
 
-},{}],55:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22367,7 +23384,7 @@ module.exports = function () {
   return editStyle;
 }();
 
-},{"log.js":58}],56:[function(require,module,exports){
+},{"log.js":60}],58:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22425,6 +23442,7 @@ module.exports = function factory() {
     loop: '\uF2EA',
     data: '\uF080',
     calibrate: '\uF24E', //f013 - settings // f24e - scale //f140 - target
+    tutorial: '\uF128', // make this the '?' symbol
     batteryFull: '\uF240',
     batteryThreeQuarters: '\uF241',
     batteryHalf: '\uF242',
@@ -22435,7 +23453,7 @@ module.exports = function factory() {
   return fastr;
 }();
 
-},{}],57:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22742,7 +23760,7 @@ module.exports = function () {
   return icons;
 }();
 
-},{"svgbuilder.js":60}],58:[function(require,module,exports){
+},{"svgbuilder.js":62}],60:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22812,7 +23830,7 @@ module.exports = function () {
     return log;
 }();
 
-},{}],59:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 'use strict';
 
 /*
@@ -22923,7 +23941,7 @@ module.exports = function () {
   return slideControl;
 }();
 
-},{"./../variables.js":62,"editStyle.js":55,"icons.js":57,"interact.js":15,"svgbuilder.js":60}],60:[function(require,module,exports){
+},{"./../variables.js":64,"editStyle.js":57,"icons.js":59,"interact.js":15,"svgbuilder.js":62}],62:[function(require,module,exports){
 'use strict';
 
 /*
@@ -23055,7 +24073,7 @@ module.exports = function () {
   return svgBuilder;
 }();
 
-},{}],61:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 'use strict';
 
 /*
@@ -23181,7 +24199,7 @@ module.exports = function () {
   return tbot;
 }();
 
-},{"./../cxn.js":39,"fastr.js":56,"icons.js":57,"interact.js":15,"svgbuilder.js":60}],62:[function(require,module,exports){
+},{"./../cxn.js":39,"fastr.js":58,"icons.js":59,"interact.js":15,"svgbuilder.js":62}],64:[function(require,module,exports){
 'use strict';
 
 /*
