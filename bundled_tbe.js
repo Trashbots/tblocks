@@ -14739,7 +14739,6 @@ module.exports = function () {
   var ko = require('knockout');
   var tbe = require('./teakblocks.js');
   var conductor = require('./conductor.js');
-
   var moveUp = 0;
 
   // Bindable properties
@@ -17688,8 +17687,6 @@ module.exports = function () {
 },{"./keypadTab.js":28,"icons.js":59,"knockout":16,"svgbuilder.js":62}],38:[function(require,module,exports){
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 /* eslint-disable max-depth */
 /* eslint-disable complexity */
 /*
@@ -17713,9 +17710,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-
-var _require = require('./overlays/driveOverlay.js'),
-    exit = _require.exit;
 
 module.exports = function () {
     var log = require('log.js');
@@ -17814,14 +17808,10 @@ module.exports = function () {
                 var block = conductor.runningBlocks[i];
                 if (block !== null) {
 
-                    log.trace('Iterate through each block:', block);
-
                     // ---- LOOP ----  //
 
                     if (conductor.loopCount === undefined && block.isLoopHead()) {
                         var orig_block = block;
-
-                        log.trace('Block is a Loop');
 
                         if (!nest_completed) {
                             // Update loops count array
@@ -17843,8 +17833,6 @@ module.exports = function () {
                                         for (var a = 1; a < nested_loop_counts.length; ++a) {
                                             nested_loop_counts[a] = parseInt(nested_loop_blocks[a].controllerSettings.data.duration) + 1;
                                         }
-
-                                        log.trace('count for outermost loop was decremented, inner loops have been reset');
                                     }
 
                                     //condition is true if the count of the current loop block is 0 and the current loop block isn't the outermost loop
@@ -17853,12 +17841,10 @@ module.exports = function () {
                                     if (condition && block.flowTail.next !== null && block.flowTail.next.name !== 'tail' && nested_loop_counts[0] != 0) {
                                         block = block.flowTail.next;
                                         conductor.runningBlocks[i] = block;
-                                        log.trace('Case to avoid playing loop block #1', block);
 
                                         //-------Play block--------//
                                         if (block.name === 'loop') {
                                             --nested_loop_counts[parseInt(a) + 1];
-                                            log.trace('the block after tail is loop', nested_loop_counts);
                                             block.count = 1;
 
                                             if (block.first.name.startsWith('identity')) {
@@ -17911,7 +17897,6 @@ module.exports = function () {
                                         }
                                     }
 
-                                    log.trace('2a i. Nested loop counts array updated', nested_loop_counts);
                                     break;
                                 }
                             }
@@ -17920,8 +17905,6 @@ module.exports = function () {
                         // ----- PLAYING BLOCK ----- //
 
                         if (nested_loop_counts[0] > 0 && block.name === 'loop' && !block.svgRect.classList.contains('running-block')) {
-                            log.trace('PLAYING LOOP BLOCK', orig_block);
-
                             //Play block
                             orig_block.count = 1;
 
@@ -17940,8 +17923,6 @@ module.exports = function () {
 
                                 //if orig_block was already played then it shouldn't be played again
                                 if (!orig_block.svgRect.classList.contains('running-block')) {
-                                    log.trace('PLAYING TAIL OF OUTERMOST LOOP', orig_block);
-
                                     orig_block.count = 1;
 
                                     if (orig_block.first.name.startsWith('identity')) {
@@ -17955,7 +17936,6 @@ module.exports = function () {
                             } else {
                                 block = block.flowTail.next;
                                 conductor.runningBlocks[i] = block;
-                                log.trace('tail reached, here where we at', block);
                             }
                         }
 
@@ -17981,24 +17961,20 @@ module.exports = function () {
 
                                 // if block is the inner most loop
                                 else if (Object.values(nested_loop_blocks)[Object.keys(nested_loop_blocks).length - 1] === block) {
-                                        log.trace('2a iii. Loop block is the innermost loop', block);
                                         conductor.loopCount = block.controllerSettings.data.duration;
                                         --nested_loop_counts[nested_loop_counts.length - 1];
-                                        log.trace('loopCount set', conductor.loopCount, _typeof(conductor.loopCount));
                                     }
 
                                     //run next block (which isn't a loop)
                                     else if (block.next.name !== 'loop') {
                                             block = block.next;
                                             conductor.runningBlocks[i] = block;
-                                            log.trace('Moving on to next block', block);
                                         }
 
                                         //run next block (which is a loop)
                                         else {
                                                 block = block.next;
                                                 conductor.runningBlocks[i] = block;
-                                                log.trace('nested for loops, the chosen loop is:', block);
                                                 nested = true;
                                             }
                         }
@@ -18009,7 +17985,6 @@ module.exports = function () {
                     if (block !== null) {
                         //Only play tail if it's the last iteration
                         if (block.name === 'tail' && (conductor.loopCount == 1 || conductor.loopCount === undefined)) {
-                            log.trace("PLAYING TAIL", block, nest_exists);
                             //Play block
                             block.count = 1;
 
@@ -18024,7 +17999,6 @@ module.exports = function () {
 
                         //tail - block - tail
                         if (block.name === 'tail' && conductor.loopCount === undefined && nest_exists) {
-                            log.trace('TAIL: tail-block-tail');
                             var temp_count = -1;
                             for (var a in nested_loop_blocks) {
                                 if (nested_loop_blocks[a] === block.flowHead) {
@@ -18058,46 +18032,36 @@ module.exports = function () {
                                     }
                                 }
 
-                                log.trace('nested loop counts be updated out here', nested_loop_counts);
                                 conductor.runningBlocks[i] = block;
-                                log.trace('tail of outer loop arrived, block is now:', block);
                                 nested = true;
                             }
                         }
 
                         //tail reached and loopCount > 1
                         else if (block.name === 'tail' && conductor.loopCount > 1) {
-                                log.trace('TAIL: loopcount > 1');
                                 conductor.loopCount -= 1;
-                                log.trace('reached the tail, decreasing loopcount:', conductor.loopCount);
                                 block = block.flowHead;
                                 conductor.runningBlocks[i] = block;
-                                log.trace('block reset back to head of for loop', block);
 
                                 //update nested_loop_blocks
                                 for (var a in nested_loop_blocks) {
                                     if (nested_loop_blocks[a] === block) {
                                         --nested_loop_counts[a];
-                                        log.trace('Nested loop counts INNER LOOP updated', nested_loop_counts);
                                         break;
                                     }
                                 }
                             } else if (block.name === 'tail' && conductor.loopCount == 1) {
-                                log.trace('TAIL: loopcount == 1', nest_exists);
                                 conductor.loopCount = undefined;
                                 if (block.next !== null) {
                                     block = block.next;
 
                                     if (block.name === 'loop') {
-                                        log.trace('BACK TO BACK FOR LOOPS');
                                         conductor.helper(block);
                                         conductor.runningBlocks[i] = block;
-                                        log.trace('next loop count:', conductor.loopCount);
                                         nested = true;
                                     } else if (block.name === 'tail') {
                                         conductor.runningBlocks[i] = block;
                                         conductor.loopCount = undefined;
-                                        log.trace('tail of inner loop arrived, block is now:', block);
                                         nested = true;
                                     }
 
@@ -18106,7 +18070,6 @@ module.exports = function () {
                                             for (var a in nested_loop_blocks) {
                                                 if (nested_loop_blocks[a] === block.prev.flowHead) {
                                                     nested_loop_counts[a] = block.prev.flowHead.controllerSettings.data.duration;
-                                                    log.trace('Nested loop counts INNER LOOP reset bc tail-block:', nested_loop_counts);
                                                     break;
                                                 }
                                             }
@@ -18126,7 +18089,6 @@ module.exports = function () {
                     //----------Executing Single Block---------------//
 
                     if (!nested && !loop_highlighted) {
-                        log.trace('executing single block', block);
 
                         if (block !== null && block.name === 'loop') {
                             block = block.next;
@@ -18230,8 +18192,6 @@ module.exports = function () {
                 ++nested_loop_counts[x];
             }
 
-            log.trace('1a. Nested for loop array initiated:', nested_loop_counts);
-            log.trace('1b. Nested for loop array #2 initiated:', nested_loop_blocks);
             nest_completed = false;
             nest_exists = nested_loop_counts.length > 1;
         } else {
@@ -18450,7 +18410,7 @@ module.exports = function () {
     return conductor;
 }();
 
-},{"./cxn.js":39,"./overlays/actionDots.js":43,"./overlays/deviceScanOverlay.js":46,"./overlays/driveOverlay.js":47,"./variables.js":64,"log.js":60}],39:[function(require,module,exports){
+},{"./cxn.js":39,"./overlays/actionDots.js":43,"./overlays/deviceScanOverlay.js":46,"./variables.js":64,"log.js":60}],39:[function(require,module,exports){
 'use strict';
 
 /*
@@ -20054,7 +20014,6 @@ module.exports = function () {
 
   // External function for putting it all together.
   dso.start = function () {
-    console.log('start called');
     document.body.addEventListener('keydown', dso.keyEvent, false);
 
     // Construct the DOM for the overlay.
